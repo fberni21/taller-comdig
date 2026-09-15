@@ -1,7 +1,9 @@
 import argparse
-import numpy as np
-import source_encoder as se
 import string
+
+import source_encoder as se
+
+from utils import compute_char_probs, compute_entropy
 
 
 def main():
@@ -12,21 +14,20 @@ def main():
     with open(args.filename, 'r') as file:
         text = file.read()
 
-    probs = se.compute_char_probs(text)
-    entropy = se.compute_entropy(probs)
-    print(f'File entropy\t: {entropy:.4f} bits/char')
+    chars = [ord(c) for c in text]
 
-    code_map = se.huff_encode(probs)
-    code_lengths = np.asarray([len(code_map[key]) for key in range(256)])
-    code_len_mean = np.sum(probs * code_lengths)
-    code_len_var = np.sum(probs * (code_lengths - code_len_mean)**2)
+    probs = compute_char_probs(chars)
+    entropy = compute_entropy(probs)
+    print(f'File entropy     : {entropy:.4f} bits/char')
 
-    print(f'Minimum length\t: {entropy:.4f} bits/symbol')
-    print(f'Code mean length: {code_len_mean:.4f} bits/symbol')
-    print(f'Code efficiency\t: {entropy/code_len_mean:.4f}')
-    print(f'Code variance\t: {code_len_var:.4f} (bits/symbol)^2')
+    huff = se.HuffmanEncoder(probs)
 
-    for k, v in sorted(code_map.items(),
+    print(f'Minimum length   : {entropy:.4f} bits/symbol')
+    print(f'Code mean length : {huff.length_avg:.4f} bits/symbol')
+    print(f'Code efficiency  : {entropy/huff.length_avg:.4f}')
+    print(f'Code variance    : {huff.length_var:.4f} (bits/symbol)^2')
+
+    for k, v in sorted(enumerate(huff.code_map),
                        key=lambda it: probs[it[0]],
                        reverse=True):
         p = probs[k]
@@ -38,7 +39,29 @@ def main():
             c = f'0x{k:02x}'
         print(f'{c}\t{p:.8f}\t{v}')
 
+    source_enc = se.SourceEncoder(huff.code_map)
+    encoded = source_enc.encode(chars)
+
+    decode_map = {v: chr(k) for k, v in enumerate(huff.code_map)}
+    decoded = decode(encoded, decode_map)
+
+    with open('decoded.txt', 'w') as f:
+        f.write(decoded)
+
     return 0
+
+
+def decode(encoded, decode_map):
+    length = len(encoded)
+    decoded = []
+    start = 0
+    while start < length:
+        end = start + 1
+        while end < length and encoded[start:end] not in decode_map:
+            end += 1
+        decoded.append(decode_map[encoded[start:end]])
+        start = end
+    return ''.join(decoded)
 
 
 if __name__ == '__main__':

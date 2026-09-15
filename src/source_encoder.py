@@ -1,74 +1,84 @@
-import numpy as np
 import heapq
 
-
-def compute_char_probs(text):
-    char_counts = np.zeros(256)
-    unique, counts = np.unique(list(text), return_counts=True)
-    for char, count in zip(unique, counts):
-        char_counts[ord(char)] = count
-    return char_counts / len(text)
+import numpy as np
 
 
-def compute_entropy(probs):
-    return -np.sum(probs * np.log2(probs + 1e-10))
+class HuffmanEncoder:
+    INNER = 256
 
+    def __init__(self, probs):
+        self.probs = probs
+        self.code_map = [None] * 256
+        self.lengths = None
+        self.length_avg = None
+        self.length_var = None
 
-def huff_build_tree(probs):
-    # Construye un árbol cuya forma final tiene en las hojas a los
-    # diferentes caracteres. Los caracteres más probables quedan a
-    # alturas más chicas, y los menos probables a alturas grandes.
-    # Es una forma estructurada de realizar el algoritmo de Huffman.
+        self._build_map()
 
-    # Inicialmente, tenemos los nodos sueltos y son todos hojas
-    # (tienen un caracter `c` asociado, y sus hijos son None).
-    tree = [(probs[c], c, None, None) for c in range(256)]
+    def _compute_stats(self):
+        self.lengths = np.array([len(code) for code in self.code_map])
+        self.length_avg = np.sum(self.probs * self.lengths)
+        self.length_var = np.sum(
+                self.probs * (self.lengths - self.length_avg)**2)
 
-    # El min-heap se usa para poder extraer los nodos de menor
-    # probabilidad en forma eficiente
-    heapq.heapify(tree)
+    def _build_map(self):
+        self._build_tree()
+        self._generate_codes(self.tree, '')
+        self._compute_stats()
 
-    while len(tree) != 1:
-        # Tomamos los dos nodos de menor probabilidad, y los hacemos
-        # hijos de un nuevo nodo cuya probabilidad es la suma de las
-        # probabilidades de sus hijos. Este nuevo nodo no tiene un
-        # caracter asociado (denotado por `-1`).
-        t1 = heapq.heappop(tree)
-        t2 = heapq.heappop(tree)
-        new = (t1[0] + t2[0], -1, t1, t2)
-        heapq.heappush(tree, new)
+    def _build_tree(self):
+        # Construye un árbol cuya forma final tiene en las hojas a los
+        # diferentes caracteres. Los caracteres más probables quedan a
+        # alturas más chicas, y los menos probables a alturas grandes.
+        # Es una forma estructurada de realizar el algoritmo de Huffman.
 
-    # La raíz del árbol es el único elemento
-    return tree[0]
+        # Inicialmente, tenemos los nodos sueltos y son todos hojas
+        # (tienen un caracter `char` asociado, y sus hijos son None).
+        nodes = [(prob, char, None, None)
+                 for char, prob in enumerate(self.probs)]
 
+        # El min-heap se usa para poder extraer los nodos de menor
+        # probabilidad en forma eficiente
+        heapq.heapify(nodes)
 
-def huff_generate_code(node, b, code_map):
-    # Recorre recursivamente el árbol de Huffman, para asignar los
-    # códigos correspondientes.
-    #
-    # Las variables `b` y `code_map` inicialmente están vacías.
-    # - `b` acumula el código de una rama.
-    # - `code_map` es un diccionario donde se agregan todos los códigos.
+        while len(nodes) != 1:
+            # Tomamos los dos nodos de menor probabilidad, y los hacemos
+            # hijos de un nuevo nodo cuya probabilidad es la suma de las
+            # probabilidades de sus hijos. Este nuevo nodo no tiene un
+            # caracter asociado.
+            t1 = heapq.heappop(nodes)
+            t2 = heapq.heappop(nodes)
+            new = (t1[0] + t2[0], self.INNER, t1, t2)
+            heapq.heappush(nodes, new)
 
-    if node is None:
-        return code_map
+        # La raíz del árbol es el único elemento
+        self.tree = nodes[0]
 
-    # Recorremos el sub árbol izquierdo, extendiendo con un `0`.
-    code_map = huff_generate_code(node[2], b + '0', code_map)
+    def _generate_codes(self, node, b):
+        # Recorre recursivamente el árbol de Huffman, para asignar los
+        # códigos correspondientes.
+        #
+        # Las variables `b` y `code_map` inicialmente están vacías.
+        # - `b` acumula el código de una rama.
+        # - `code_map` es un diccionario donde se agregan todos los códigos.
 
-    # Si este nodo es hoja, le asignamos el código acumulado en `b`.
-    if node[1] != -1:
-        code_map[node[1]] = b[:]
+        if node is None:
+            return
 
-    # Recorremos el sub árbol derecho, extendiendo con un `1`.
-    return huff_generate_code(node[3], b + '1', code_map)
+        # Recorremos el sub árbol izquierdo, extendiendo con un `0`.
+        self._generate_codes(node[2], b + '0')
 
+        # Si este nodo es hoja, le asignamos el código acumulado en `b`.
+        if node[1] != self.INNER:
+            self.code_map[node[1]] = b[:]
 
-def huff_encode(probs):
-    tree = huff_build_tree(probs)
-    code_map = huff_generate_code(tree, '', {})
-    return code_map
+        # Recorremos el sub árbol derecho, extendiendo con un `1`.
+        self._generate_codes(node[3], b + '1')
 
 
 class SourceEncoder:
-    pass
+    def __init__(self, code_map):
+        self.code_map = code_map
+
+    def encode(self, text):
+        return ''.join([self.code_map[c] for c in text])
