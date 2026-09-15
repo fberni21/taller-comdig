@@ -12,3 +12,11 @@ def compute_char_probs(text):
 
 def compute_entropy(probs):
     return -np.sum(probs * np.log2(probs + 1e-10))
+
+
+def is_prefix_code(code_map):
+    for i, this in enumerate(code_map):
+        for that in code_map[i + 1:]:
+            if this.startswith(that) or that.startswith(this):
+                return False
+    return True
