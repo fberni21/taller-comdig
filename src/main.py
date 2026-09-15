@@ -39,7 +39,10 @@ def main():
         c = f'`{chr(k)}`'
         if chr(k) not in string.ascii_letters + ' ' + string.digits \
                 + string.punctuation:
-            c = f'0x{k:02x}'
+            if chr(k) == '\n':
+                c = '`\\n`'
+            else:
+                c = f'0x{k:02x}'
         print(f'{c}\t{p:.8f}\t{v}')
 
     source_enc = source.SourceEncoder(huff.code_map)
