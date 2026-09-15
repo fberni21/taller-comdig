@@ -1,0 +1,39 @@
+\documentclass[10pt,a4paper]{article}
+
+\pdfsuppresswarningpagegroup=1
+
+\usepackage{graphicx}
+\graphicspath{ {./img/} }
+
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage[square,numbers]{natbib}
+
+\usepackage{ifpdf}
+\ifpdf
+  \DeclareGraphicsExtensions{.pdf,.png}
+\else
+\fi
+
+%\setcounter{tocdepth}{2}
+
+\bibliographystyle{ieeetr}
+
+\usepackage{mystyle}
+
+\runninghead{Simulación y Análisis de un Sistema de Comunicaciones}
+\footertext{}
+
+\begin{document}
+
+\input{./tex/title.tex}
+\input{./tex/resumen.tex}
+\thispagestyle{empty}
+\vspace{2em}
+\input{./tex/desarrollo.tex}
+\input{./tex/conclusiones.tex}
+
+\end{document}
