@@ -82,3 +82,20 @@ class SourceEncoder:
 
     def encode(self, text):
         return ''.join([self.code_map[c] for c in text])
+
+
+class SourceDecoder:
+    def __init__(self, code_map):
+        self.decode_map = {v: chr(k) for k, v in enumerate(code_map)}
+
+    def decode(self, encoded):
+        length = len(encoded)
+        decoded = []
+        start = 0
+        while start < length:
+            end = start + 1
+            while end < length and encoded[start:end] not in self.decode_map:
+                end += 1
+            decoded.append(self.decode_map[encoded[start:end]])
+            start = end
+        return ''.join(decoded)
