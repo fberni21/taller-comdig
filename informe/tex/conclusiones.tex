@@ -1,3 +1,20 @@
 \section{Conclusiones}
 
+Los resultados obtenidos muestran que la codificación de fuente mediante el algoritmo de
+Huffman logra una reducción significativa en la cantidad de bits necesarios para representar
+el texto, respecto de un esquema de codificación de longitud constante: sobre el texto de
+prueba utilizado, la codificación de Huffman requirió un \qty{42.12}{\percent} menos de bits
+que el código ASCII extendido de 8 bits, alcanzando una eficiencia del \qty{99.44}{\percent}
+respecto de la cota teórica de Shannon. Esto confirma la ventaja de asignar palabras de código
+de longitud variable en función de la probabilidad de ocurrencia de cada símbolo, en lugar de
+codificar todos los caracteres con la misma cantidad de bits.
+
+Cabe destacar, sin embargo, que el texto utilizado no constituye, estrictamente, una fuente
+discreta sin memoria: el modelo empleado supone que la aparición de cada carácter es
+estadísticamente independiente de los caracteres anteriores, cuando en un texto real en inglés
+existen fuertes correlaciones entre caracteres consecutivos (por ejemplo, la letra
+\texttt{q} es seguida casi siempre por \texttt{u}). El modelo de fuente sin memoria utilizado
+es, por lo tanto, una simplificación que ignora esta dependencia estadística; una codificación
+que explote dicha memoria podría lograr una compresión aún mayor que la obtenida.
+
 % vim: ts=4 sts=4 sw=4 et lbr

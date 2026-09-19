@@ -1,5 +1,205 @@
 \section{Desarrollo}
 
-Prueba para mostrar a juli.
+\subsection{Programa principal --- Datos, control y estructura general del sistema}
+
+El sistema se organiza en torno a un programa principal (\texttt{main.py}) que recibe como
+parámetro de entrada la ruta de un archivo de texto a transmitir, y desde el cual se invocan
+secuencialmente las distintas etapas del sistema de comunicaciones: Transmisor, Canal y Receptor.
+
+Siguiendo el esquema conceptual del enunciado, el programa se estructura en cuatro secciones:
+
+\begin{itemize}
+	\item \textbf{Datos y control}: lectura del archivo de texto y definición de los parámetros
+	de la simulación (esquema y orden de modulación, habilitación de codificación de canal,
+	relación SNR, etc.).
+	\item \textbf{Transmisor}: codificador de fuente, codificador de canal y modulador.
+	\item \textbf{Canal}: modelado de la respuesta impulsiva del canal y del ruido aditivo
+	blanco gaussiano (AWGN).
+	\item \textbf{Receptor}: demodulador, decodificador de canal y decodificador de fuente,
+	hasta la reconstrucción del archivo de texto recibido.
+\end{itemize}
+
+Los bloques recíprocos del transmisor y del receptor (por ejemplo, modulador y demodulador) se
+desarrollan en conjunto, de forma tal que cada etapa de la cadena admita su correspondiente
+inversa en el extremo receptor. Las secciones siguientes de este informe detallan el diseño e
+implementación de cada uno de estos bloques.
+
+\subsection{Codificación y decodificación de fuente}
+
+Como texto de prueba para el análisis se utilizó un archivo conteniendo las obras completas de William Shakespeare (\texttt{shakespeare.txt}), de aproximadamente
+5.4 millones de caracteres, lo que permite obtener estadísticas robustas sobre la distribución de probabilidad de los caracteres del idioma inglés.
+
+\subsubsection{Distribución de caracteres y código asignado}
+
+Para la construcción del código se relevó la frecuencia de aparición de cada carácter sobre el texto completo a transmitir, obteniéndose un alfabeto de 84 símbolos distintos
+(letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). El cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
+binario asignada por el algoritmo de Huffman. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
+
+\begin{table}[htpb]
+	\centering
+	\begin{tabular}{c S[table-format=7.0] S[table-format=1.5] l}
+		\toprule
+		\textbf{Carácter} & \textbf{Cantidad} & \textbf{Probabilidad} & \textbf{Código} \\
+		\midrule
+		(espacio)                    & 1281576 & 0.23574 & \texttt{01}     \\
+		e                            & 403875  & 0.07429 & \texttt{1100}   \\
+		t                            & 289404  & 0.05323 & \texttt{1000}   \\
+		o                            & 280908  & 0.05167 & \texttt{0010}   \\
+		a                            & 244267  & 0.04493 & \texttt{11111}  \\
+		h                            & 218199  & 0.04014 & \texttt{11101}  \\
+		n                            & 215562  & 0.03965 & \texttt{11100}  \\
+		s                            & 214679  & 0.03949 & \texttt{11011}  \\
+		r                            & 208488  & 0.03835 & \texttt{11010}  \\
+		i                            & 197778  & 0.03638 & \texttt{10110}  \\
+		l                            & 145917  & 0.02684 & \texttt{00111}  \\
+		d                            & 133557  & 0.02457 & \texttt{00011}  \\
+		\texttt{\textbackslash n}    & 124185  & 0.02284 & \texttt{00001}  \\
+		u                            & 114637  & 0.02109 & \texttt{111101} \\
+		m                            & 95431   & 0.01755 & \texttt{101110} \\
+		\bottomrule
+	\end{tabular}
+	\caption{Caracteres más frecuentes del texto, con su cantidad de ocurrencias, probabilidad y palabra de código de Huffman asignada.}
+	\label{tab:caracteres-frecuentes}
+\end{table}
+
+\subsubsection{Verificación de código prefijo}
+\label{sec:verificacion-prefijo}
+Se puede verificar que ninguna palabra de código es prefijo de otra tomando, por ejemplo, tres palabras que comparten los primeros bits:
+
+\begin{center}
+	\begin{tabular}{ccc}
+		\toprule
+		Carácter & Probabilidad & Código \\
+		\midrule
+		\texttt{e} & 0.07428987 & \texttt{1100} \\
+		\texttt{n} & 0.03965106 & \texttt{11100} \\
+		\texttt{a} & 0.04493114 & \texttt{11111} \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+
+Las tres palabras comienzan con \texttt{11}, pero al comparar \texttt{1100} (\texttt{e}) con
+los primeros 4 bits de \texttt{11100} (\texttt{n}), se obtiene \texttt{1110} $\neq$ \texttt{1100}:
+difieren en el tercer bit, por lo que \texttt{1100} no es prefijo de \texttt{11100}. De la misma
+forma, comparando \texttt{11100} (\texttt{n}) con los primeros 5 bits de \texttt{11111}
+(\texttt{a}), se obtiene \texttt{11111} $\neq$ \texttt{11100}: difieren en el cuarto bit, por lo
+que \texttt{11100} no es prefijo de \texttt{11111}. Este comportamiento no es casual: al provenir
+de las hojas de un árbol binario de Huffman, cada palabra de código corresponde a un camino único
+desde la raíz hasta una hoja, y ningún camino hacia una hoja puede atravesar otra hoja. Por lo
+tanto, el código resultante es necesariamente un código prefijo. Esta propiedad se corroboró
+además de forma programática, comparando exhaustivamente cada par de palabras de código del
+alfabeto completo, confirmando que ninguna es prefijo de otra.
+
+\subsubsection{Características del código obtenido}
+
+El código de Huffman obtenido es, en primer lugar, un código prefijo
+(Sección~\ref{sec:verificacion-prefijo}), por lo que, según el teorema correspondiente, es
+también un código unívocamente decodificable: toda secuencia codificada se corresponde con una
+única secuencia de caracteres de la fuente.
+
+Es además un código de longitud variable: los caracteres más frecuentes (el espacio,
+\texttt{e}, \texttt{t}, \texttt{o}) reciben palabras de código cortas (entre 2 y 5 bits),
+mientras que los caracteres poco frecuentes (por ejemplo símbolos como \texttt{\&}, \texttt{\}}
+o \texttt{|}) reciben palabras de hasta 21 bits.
+
+El algoritmo de Huffman garantiza que este código es óptimo: para la distribución de
+probabilidades dada, tiene la menor longitud promedio $\bar{L}$ posible dentro de la clase
+completa de códigos unívocamente decodificables, no solo entre los códigos prefijo. Sin
+embargo, no se trata de un código absolutamente óptimo, ya que esto exigiría que la
+probabilidad de cada carácter fuera una potencia negativa exacta de 2 ($p_k = 2^{-l_k}$), es
+decir, una distribución diádica, condición que no se cumple para un texto real como el
+utilizado.
+
+Esta propiedad se refleja en que la longitud media obtenida (4.6307 bits/símbolo) se
+aproxima a la entropía de la fuente (4.6046 bits/símbolo), con una eficiencia
+$\eta = L_{min}/\bar{L} = \qty{99.44}{\percent}$. La pequeña diferencia remanente no se debe a
+una limitación del algoritmo de Huffman, sino a que las longitudes de código deben ser números enteros de bits, mientras que
+la entropía admite valores fraccionarios.
+
+\subsubsection{Ejemplo de codificación y decodificación}
+
+A modo de ejemplo, se tomó la línea de texto \texttt{"May the Force be with you."}
+(27 caracteres) y se aplicaron las funciones de codificación y decodificación
+desarrolladas, obteniéndose:
+
+\begin{center}
+	\begin{tabular}{l p{0.75\textwidth}}
+		\toprule
+		\textbf{Original}     & \texttt{May the Force be with you.} \\
+		\textbf{Codificada}   & \texttt{\seqsplit{000001111111110100101100011101110001101010110001011010000100110001101011111000110010010110100011101011010010010111101100110}} \\
+		\textbf{Decodificada} & \texttt{May the Force be with you.} \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+
+La línea codificada utiliza 123 bits para sus 27 caracteres, es decir, 4.56 bits/símbolo en
+promedio, un valor cercano a la longitud media general del código (4.6307 bits/símbolo). La
+frase de prueba utiliza caracteres relativamente comunes, por lo que su longitud resulta
+levemente menor al promedio del texto completo, que incluye también caracteres poco frecuentes
+codificados con palabras más largas. Se verifica además que la línea decodificada coincide
+exactamente con la original, confirmando el correcto funcionamiento del codificador y el
+decodificador de fuente.
+
+\subsubsection{Entropía, longitud del código y eficiencia}
+
+El cuadro~\ref{tab:resumen-entropia} resume los parámetros característicos del código
+obtenido para el texto de prueba utilizado (\texttt{shakespeare.txt}), comparados con la
+cota teórica de Shannon y con un código de longitud fija (código ASCII extendido de
+8 bits).
+
+\begin{table}[htpb]
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		\textbf{Magnitud} & \textbf{Valor} \\
+		\midrule
+		Entropía de la fuente, $H(\mathcal{S})$                  & 4.6046 bits/símbolo \\
+		Longitud mínima (cota de Shannon), $L_{min}$              & 4.6046 bits/símbolo \\
+		Longitud media del código, $\bar{L}$                      & 4.6307 bits/símbolo \\
+		Varianza del código, $\sigma_L^2$                         & 3.4904 (bits/símbolo)$^2$ \\
+		Eficiencia, $\eta = L_{min}/\bar{L}$                      & \qty{99.44}{\percent} \\
+		Longitud de un código de longitud fija (ASCII extendido)  & 8 bits/símbolo \\
+		\bottomrule
+	\end{tabular}
+	\caption{Entropía de la fuente, longitud mínima, longitud media, varianza y
+		eficiencia del código de Huffman obtenido para el texto de prueba, comparado con un
+		código de longitud fija.}
+	\label{tab:resumen-entropia}
+\end{table}
+
+Se observa que $L_{min} = H(\mathcal{S})$, dado que la cota de Shannon se calcula como
+$L_{min} = H(\mathcal{S})/\log_2 r$ y, al tratarse de un código binario, $r = 2$ y
+$\log_2 2 = 1$. Asimismo, la longitud media del código diseñado sobre este texto
+(4.6307 bits/símbolo) resulta considerablemente menor que la longitud fija de
+8 bits/símbolo que requeriría el código ASCII extendido, evidenciando la ventaja
+de emplear un código de longitud variable adaptado a la estadística particular de la
+fuente.
+
+\subsubsection{Cantidad de bits necesarios para el texto completo}
+
+El cuadro~\ref{tab:bits-totales} compara la cantidad total de bits necesarios para
+codificar el texto completo utilizado (\texttt{shakespeare.txt}, de
+\num{5436475} caracteres) empleando el código de Huffman diseñado, frente a la
+cantidad de bits que se necesitarían utilizando un código de longitud fija (ASCII
+extendido de 8 bits por carácter).
+
+\begin{table}[htpb]
+	\centering
+	\begin{tabular}{lS[table-format=8.0]}
+		\toprule
+		\textbf{Esquema de codificación} & \textbf{Bits totales} \\
+		\midrule
+		Código de Huffman diseñado                 & 25174699 \\
+		Código de longitud fija (ASCII, 8 bits)    & 43491800 \\
+		\bottomrule
+	\end{tabular}
+	\caption{Cantidad total de bits necesarios para codificar el texto completo,
+		comparando el código de Huffman diseñado con un código de longitud fija.}
+	\label{tab:bits-totales}
+\end{table}
+
+El uso del código de Huffman diseñado representa un ahorro de \qty{42.12}{\percent} en
+la cantidad de bits necesarios para transmitir el texto completo, respecto de utilizar
+un código de longitud fija de 8 bits por carácter.
 
 % vim: ts=4 sts=4 sw=4 et lbr
