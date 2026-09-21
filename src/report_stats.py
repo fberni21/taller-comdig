@@ -95,6 +95,7 @@ def main():
     sample_chars = [ord(c) for c in sample]
     encoded = enc.encode(sample_chars)
     decoded = dec.decode(encoded)
+    print(f'Largo        : {len(sample)}')
     print(f'Original     : {sample!r}')
     print(f'Codificada   : {encoded}')
     print(f'Bits         : {len(encoded)}')

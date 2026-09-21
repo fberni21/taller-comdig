@@ -2,101 +2,58 @@
 \section{Cuadro completo de caracteres, probabilidades y códigos}
 \label{app:tabla-completa}
 
-\begin{longtable}{c S[table-format=7.0] S[table-format=1.5] l}
+\begin{table}
 	\caption{Cuadro completo de los 84 caracteres presentes en el texto, con su
-		cantidad de ocurrencias, probabilidad y palabra de código de Huffman.} \\
-	\toprule
-	\textbf{Carácter} & \textbf{Cantidad} & \textbf{Probabilidad} & \textbf{Código} \\
-	\midrule
-	\endfirsthead
-	\toprule
-	\textbf{Carácter} & \textbf{Cantidad} & \textbf{Probabilidad} & \textbf{Código} \\
-	\midrule
-	\endhead
-	\bottomrule
-	\endfoot
-	(espacio)                 & 1281576 & 0.23574 & \texttt{01}                          \\
-	e                         & 403875  & 0.07429 & \texttt{1100}                        \\
-	t                         & 289404  & 0.05323 & \texttt{1000}                        \\
-	o                         & 280908  & 0.05167 & \texttt{0010}                        \\
-	a                         & 244267  & 0.04493 & \texttt{11111}                       \\
-	h                         & 218199  & 0.04014 & \texttt{11101}                       \\
-	n                         & 215562  & 0.03965 & \texttt{11100}                       \\
-	s                         & 214679  & 0.03949 & \texttt{11011}                       \\
-	r                         & 208488  & 0.03835 & \texttt{11010}                       \\
-	i                         & 197778  & 0.03638 & \texttt{10110}                       \\
-	l                         & 145917  & 0.02684 & \texttt{00111}                       \\
-	d                         & 133557  & 0.02457 & \texttt{00011}                       \\
-	\texttt{\textbackslash n} & 124185  & 0.02284 & \texttt{00001}                       \\
-	u                         & 114637  & 0.02109 & \texttt{111101}                      \\
-	m                         & 95431   & 0.01755 & \texttt{101110}                      \\
-	y                         & 85139   & 0.01566 & \texttt{101001}                      \\
-	,                         & 83064   & 0.01528 & \texttt{101000}                      \\
-	.                         & 77922   & 0.01433 & \texttt{100110}                      \\
-	w                         & 72843   & 0.01340 & \texttt{100100}                      \\
-	f                         & 68671   & 0.01263 & \texttt{001101}                      \\
-	c                         & 66478   & 0.01223 & \texttt{000100}                      \\
-	g                         & 56951   & 0.01048 & \texttt{1111001}                     \\
-	I                         & 55549   & 0.01022 & \texttt{1011111}                     \\
-	b                         & 46456   & 0.00855 & \texttt{1010111}                     \\
-	p                         & 46402   & 0.00854 & \texttt{1010110}                     \\
-	A                         & 44324   & 0.00815 & \texttt{1010100}                     \\
-	E                         & 42267   & 0.00777 & \texttt{1001111}                     \\
-	T                         & 39581   & 0.00728 & \texttt{1001011}                     \\
-	v                         & 33942   & 0.00624 & \texttt{0011001}                     \\
-	S                         & 33835   & 0.00622 & \texttt{0011000}                     \\
-	O                         & 32981   & 0.00607 & \texttt{0001010}                     \\
-	\textquotesingle          & 31067   & 0.00571 & \texttt{0000010}                     \\
-	k                         & 29178   & 0.00537 & \texttt{0000000}                     \\
-	R                         & 28761   & 0.00529 & \texttt{11110001}                    \\
-	N                         & 27187   & 0.00500 & \texttt{11110000}                    \\
-	L                         & 23738   & 0.00437 & \texttt{10111100}                    \\
-	C                         & 21361   & 0.00393 & \texttt{10011101}                    \\
-	H                         & 18383   & 0.00338 & \texttt{10010101}                    \\
-	;                         & 17194   & 0.00316 & \texttt{10010100}                    \\
-	W                         & 16442   & 0.00302 & \texttt{00010110}                    \\
-	M                         & 15787   & 0.00290 & \texttt{00000111}                    \\
-	D                         & 15570   & 0.00286 & \texttt{00000110}                    \\
-	B                         & 15331   & 0.00282 & \texttt{00000011}                    \\
-	U                         & 14060   & 0.00259 & \texttt{101111011}                   \\
-	P                         & 11846   & 0.00218 & \texttt{101111010}                   \\
-	F                         & 11662   & 0.00215 & \texttt{101010110}                   \\
-	G                         & 11103   & 0.00204 & \texttt{101010101}                   \\
-	?                         & 10475   & 0.00193 & \texttt{101010100}                   \\
-	Y                         & 9033    & 0.00166 & \texttt{100111000}                   \\
-	!                         & 8827    & 0.00162 & \texttt{000101111}                   \\
-	-                         & 8058    & 0.00148 & \texttt{000000101}                   \\
-	K                         & 6183    & 0.00114 & \texttt{1010101111}                  \\
-	x                         & 4620    & 0.00085 & \texttt{1001110010}                  \\
-	V                         & 3555    & 0.00065 & \texttt{0000001000}                  \\
-	j                         & 2691    & 0.00049 & \texttt{10101011100}                 \\
-	q                         & 2400    & 0.00044 & \texttt{10011100111}                 \\
-	{[}                       & 2071    & 0.00038 & \texttt{00010111010}                 \\
-	{]}                       & 2063    & 0.00038 & \texttt{00010111001}                 \\
-	J                         & 2061    & 0.00038 & \texttt{00010111000}                 \\
-	:                         & 1810    & 0.00033 & \texttt{00000010010}                 \\
-	Q                         & 1177    & 0.00022 & \texttt{100111001101}                \\
-	z                         & 1094    & 0.00020 & \texttt{000101110111}                \\
-	9                         & 921     & 0.00017 & \texttt{000000100111}                \\
-	1                         & 890     & 0.00016 & \texttt{000000100110}                \\
-	(                         & 599     & 0.00011 & \texttt{1010101110101}               \\
-	)                         & 598     & 0.00011 & \texttt{1010101110100}               \\
-	X                         & 597     & 0.00011 & \texttt{1001110011001}               \\
-	Z                         & 532     & 0.00010 & \texttt{0001011101101}               \\
-	\textless                 & 462     & 0.00008 & \texttt{0001011101100}               \\
-	"                         & 450     & 0.00008 & \texttt{10101011101111}              \\
-	\textgreater              & 434     & 0.00008 & \texttt{10101011101110}              \\
-	2                         & 340     & 0.00006 & \texttt{10101011101100}              \\
-	3                         & 316     & 0.00006 & \texttt{10011100110001}              \\
-	0                         & 261     & 0.00005 & \texttt{10011100110000}              \\
-	4                         & 88      & 0.00002 & \texttt{1010101110110101}            \\
-	5                         & 78      & 0.00001 & \texttt{1010101110110100}            \\
-	\_                        & 68      & 0.00001 & \texttt{10101011101101110}           \\
-	6                         & 58      & 0.00001 & \texttt{10101011101101101}           \\
-	7                         & 37      & 0.00001 & \texttt{101010111011011111}           \\
-	8                         & 33      & 0.00001 & \texttt{101010111011011001}           \\
-	\textbar                  & 33      & 0.00001 & \texttt{101010111011011110}           \\
-	\&                        & 21      & 0.00000 & \texttt{1010101110110110001}          \\
-	\}                        & 2       & 0.00000 & \texttt{10101011101101100001}         \\
-	\textasciigrave           & 1       & 0.00000 & \texttt{101010111011011000001}        \\
-\end{longtable}
+		cantidad de ocurrencias, probabilidad y palabra de código de Huffman.}
+    \footnotesize
+    \begin{tabular}{c S[table-format=7.0] S[table-format=1.5] l|c S[table-format=7.0] S[table-format=1.5] l}
+        \toprule
+        {Caracter} & {Cantidad} & {Probabilidad} & {Código} & {Caracter} & {Cantidad} & {Probabilidad} & {Código} \\
+        \midrule
+        (espacio)                 & 1281576 & 0.23574 & \texttt{01}       & \texttt{B}                & 15331   & 0.00282 & \texttt{00000011}                    \\
+        \texttt{e}                & 403875  & 0.07429 & \texttt{1100}     & \texttt{U}                & 14060   & 0.00259 & \texttt{101111011}                   \\
+        \texttt{t}                & 289404  & 0.05323 & \texttt{1000}     & \texttt{P}                & 11846   & 0.00218 & \texttt{101111010}                   \\
+        \texttt{o}                & 280908  & 0.05167 & \texttt{0010}     & \texttt{F}                & 11662   & 0.00215 & \texttt{101010110}                   \\
+        \texttt{a}                & 244267  & 0.04493 & \texttt{11111}    & \texttt{G}                & 11103   & 0.00204 & \texttt{101010101}                   \\
+        \texttt{h}                & 218199  & 0.04014 & \texttt{11101}    & \texttt{?}                & 10475   & 0.00193 & \texttt{101010100}                   \\
+        \texttt{n}                & 215562  & 0.03965 & \texttt{11100}    & \texttt{Y}                & 9033    & 0.00166 & \texttt{100111000}                   \\
+        \texttt{s}                & 214679  & 0.03949 & \texttt{11011}    & \texttt{!}                & 8827    & 0.00162 & \texttt{000101111}                   \\
+        \texttt{r}                & 208488  & 0.03835 & \texttt{11010}    & \texttt{-}                & 8058    & 0.00148 & \texttt{000000101}                   \\
+        \texttt{i}                & 197778  & 0.03638 & \texttt{10110}    & \texttt{K}                & 6183    & 0.00114 & \texttt{1010101111}                  \\
+        \texttt{l}                & 145917  & 0.02684 & \texttt{00111}    & \texttt{x}                & 4620    & 0.00085 & \texttt{1001110010}                  \\
+        \texttt{d}                & 133557  & 0.02457 & \texttt{00011}    & \texttt{V}                & 3555    & 0.00065 & \texttt{0000001000}                  \\
+        \verb|\n|                 & 124185  & 0.02284 & \texttt{00001}    & \texttt{j}                & 2691    & 0.00049 & \texttt{10101011100}                 \\
+        \texttt{u}                & 114637  & 0.02109 & \texttt{111101}   & \texttt{q}                & 2400    & 0.00044 & \texttt{10011100111}                 \\
+        \texttt{m}                & 95431   & 0.01755 & \texttt{101110}   & \verb|[|                  & 2071    & 0.00038 & \texttt{00010111010}                 \\
+        \texttt{y}                & 85139   & 0.01566 & \texttt{101001}   & \texttt{]}                & 2063    & 0.00038 & \texttt{00010111001}                 \\
+        \texttt{,}                & 83064   & 0.01528 & \texttt{101000}   & \texttt{J}                & 2061    & 0.00038 & \texttt{00010111000}                 \\
+        \texttt{.}                & 77922   & 0.01433 & \texttt{100110}   & \texttt{:}                & 1810    & 0.00033 & \texttt{00000010010}                 \\
+        \texttt{w}                & 72843   & 0.01340 & \texttt{100100}   & \texttt{Q}                & 1177    & 0.00022 & \texttt{100111001101}                \\
+        \texttt{f}                & 68671   & 0.01263 & \texttt{001101}   & \texttt{z}                & 1094    & 0.00020 & \texttt{000101110111}                \\
+        \texttt{c}                & 66478   & 0.01223 & \texttt{000100}   & \texttt{9}                & 921     & 0.00017 & \texttt{000000100111}                \\
+        \texttt{g}                & 56951   & 0.01048 & \texttt{1111001}  & \texttt{1}                & 890     & 0.00016 & \texttt{000000100110}                \\
+        \texttt{I}                & 55549   & 0.01022 & \texttt{1011111}  & \verb|(|                  & 599     & 0.00011 & \texttt{1010101110101}               \\
+        \texttt{b}                & 46456   & 0.00855 & \texttt{1010111}  & \verb|)|                  & 598     & 0.00011 & \texttt{1010101110100}               \\
+        \texttt{p}                & 46402   & 0.00854 & \texttt{1010110}  & \texttt{X}                & 597     & 0.00011 & \texttt{1001110011001}               \\
+        \texttt{A}                & 44324   & 0.00815 & \texttt{1010100}  & \texttt{Z}                & 532     & 0.00010 & \texttt{0001011101101}               \\
+        \texttt{E}                & 42267   & 0.00777 & \texttt{1001111}  & \verb|<|                  & 462     & 0.00008 & \texttt{0001011101100}               \\
+        \texttt{T}                & 39581   & 0.00728 & \texttt{1001011}  & \texttt{"}                & 450     & 0.00008 & \texttt{10101011101111}              \\
+        \texttt{v}                & 33942   & 0.00624 & \texttt{0011001}  & \verb|>|                  & 434     & 0.00008 & \texttt{10101011101110}              \\
+        \texttt{S}                & 33835   & 0.00622 & \texttt{0011000}  & \texttt{2}                & 340     & 0.00006 & \texttt{10101011101100}              \\
+        \texttt{O}                & 32981   & 0.00607 & \texttt{0001010}  & \texttt{3}                & 316     & 0.00006 & \texttt{10011100110001}              \\
+        \texttt{\textquotesingle} & 31067   & 0.00571 & \texttt{0000010}  & \texttt{0}                & 261     & 0.00005 & \texttt{10011100110000}              \\
+        \texttt{k}                & 29178   & 0.00537 & \texttt{0000000}  & \texttt{4}                & 88      & 0.00002 & \texttt{1010101110110101}            \\
+        \texttt{R}                & 28761   & 0.00529 & \texttt{11110001} & \texttt{5}                & 78      & 0.00001 & \texttt{1010101110110100}            \\
+        \texttt{N}                & 27187   & 0.00500 & \texttt{11110000} & \texttt{\_}               & 68      & 0.00001 & \texttt{10101011101101110}           \\
+        \texttt{L}                & 23738   & 0.00437 & \texttt{10111100} & \texttt{6}                & 58      & 0.00001 & \texttt{10101011101101101}           \\
+        \texttt{C}                & 21361   & 0.00393 & \texttt{10011101} & \texttt{7}                & 37      & 0.00001 & \texttt{101010111011011111}          \\
+        \texttt{H}                & 18383   & 0.00338 & \texttt{10010101} & \texttt{8}                & 33      & 0.00001 & \texttt{101010111011011001}          \\
+        \texttt{;}                & 17194   & 0.00316 & \texttt{10010100} & \texttt{|}                & 33      & 0.00001 & \texttt{101010111011011110}          \\
+        \texttt{W}                & 16442   & 0.00302 & \texttt{00010110} & \texttt{\&}               & 21      & 0.00000 & \texttt{1010101110110110001}         \\
+        \texttt{M}                & 15787   & 0.00290 & \texttt{00000111} & \verb|}|                  & 2       & 0.00000 & \texttt{10101011101101100001}        \\
+        \texttt{D}                & 15570   & 0.00286 & \texttt{00000110} & \texttt{\textasciigrave}  & 1       & 0.00000 & \texttt{101010111011011000001}       \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% vim: ts=4 sts=4 sw=4 et lbr

@@ -32,30 +32,30 @@ Como texto de prueba para el análisis se utilizó un archivo conteniendo las ob
 \subsubsection{Distribución de caracteres y código asignado}
 
 Para la construcción del código se relevó la frecuencia de aparición de cada carácter sobre el texto completo a transmitir, obteniéndose un alfabeto de 84 símbolos distintos
-(letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). El cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
-binario asignada por el algoritmo de Huffman. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
+(letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). Observar que no todos los 128 caracteres posibles del código ASCII aparecen en el texto, en particular faltna la mayoría de los carcteres de control, así como algunos símbolos infrecuentes. El cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
+binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
 
 \begin{table}[htpb]
 	\centering
 	\begin{tabular}{c S[table-format=7.0] S[table-format=1.5] l}
 		\toprule
-		\textbf{Carácter} & \textbf{Cantidad} & \textbf{Probabilidad} & \textbf{Código} \\
+        Carácter & {Cantidad} & {Probabilidad} & Código \\
 		\midrule
-		(espacio)                    & 1281576 & 0.23574 & \texttt{01}     \\
-		e                            & 403875  & 0.07429 & \texttt{1100}   \\
-		t                            & 289404  & 0.05323 & \texttt{1000}   \\
-		o                            & 280908  & 0.05167 & \texttt{0010}   \\
-		a                            & 244267  & 0.04493 & \texttt{11111}  \\
-		h                            & 218199  & 0.04014 & \texttt{11101}  \\
-		n                            & 215562  & 0.03965 & \texttt{11100}  \\
-		s                            & 214679  & 0.03949 & \texttt{11011}  \\
-		r                            & 208488  & 0.03835 & \texttt{11010}  \\
-		i                            & 197778  & 0.03638 & \texttt{10110}  \\
-		l                            & 145917  & 0.02684 & \texttt{00111}  \\
-		d                            & 133557  & 0.02457 & \texttt{00011}  \\
-		\texttt{\textbackslash n}    & 124185  & 0.02284 & \texttt{00001}  \\
-		u                            & 114637  & 0.02109 & \texttt{111101} \\
-		m                            & 95431   & 0.01755 & \texttt{101110} \\
+		(espacio)                      & 1281576 & 0.23574 & \texttt{01}     \\
+		\texttt{e}                     & 403875  & 0.07429 & \texttt{1100}   \\
+		\texttt{t}                     & 289404  & 0.05323 & \texttt{1000}   \\
+		\texttt{o}                     & 280908  & 0.05167 & \texttt{0010}   \\
+		\texttt{a}                     & 244267  & 0.04493 & \texttt{11111}  \\
+		\texttt{h}                     & 218199  & 0.04014 & \texttt{11101}  \\
+		\texttt{n}                     & 215562  & 0.03965 & \texttt{11100}  \\
+		\texttt{s}                     & 214679  & 0.03949 & \texttt{11011}  \\
+		\texttt{r}                     & 208488  & 0.03835 & \texttt{11010}  \\
+		\texttt{i}                     & 197778  & 0.03638 & \texttt{10110}  \\
+		\texttt{l}                     & 145917  & 0.02684 & \texttt{00111}  \\
+		\texttt{d}                     & 133557  & 0.02457 & \texttt{00011}  \\
+		\verb|\n|                      & 124185  & 0.02284 & \texttt{00001}  \\
+		\texttt{u}                     & 114637  & 0.02109 & \texttt{111101} \\
+		\texttt{m}                     & 95431   & 0.01755 & \texttt{101110} \\
 		\bottomrule
 	\end{tabular}
 	\caption{Caracteres más frecuentes del texto, con su cantidad de ocurrencias, probabilidad y palabra de código de Huffman asignada.}
@@ -67,13 +67,13 @@ binario asignada por el algoritmo de Huffman. El cuadro completo, con los 84 car
 Se puede verificar que ninguna palabra de código es prefijo de otra tomando, por ejemplo, tres palabras que comparten los primeros bits:
 
 \begin{center}
-	\begin{tabular}{ccc}
+	\begin{tabular}{cl}
 		\toprule
-		Carácter & Probabilidad & Código \\
+        Carácter & {Código} \\
 		\midrule
-		\texttt{e} & 0.07428987 & \texttt{1100} \\
-		\texttt{n} & 0.03965106 & \texttt{11100} \\
-		\texttt{a} & 0.04493114 & \texttt{11111} \\
+		\texttt{e} & \texttt{1100} \\
+		\texttt{n} & \texttt{11100} \\
+		\texttt{a} & \texttt{11111} \\
 		\bottomrule
 	\end{tabular}
 \end{center}
@@ -99,7 +99,7 @@ también un código unívocamente decodificable: toda secuencia codificada se co
 
 Es además un código de longitud variable: los caracteres más frecuentes (el espacio,
 \texttt{e}, \texttt{t}, \texttt{o}) reciben palabras de código cortas (entre 2 y 5 bits),
-mientras que los caracteres poco frecuentes (por ejemplo símbolos como \texttt{\&}, \texttt{\}}
+mientras que los caracteres poco frecuentes (por ejemplo símbolos como \texttt{\&}, \verb|}|
 o \texttt{|}) reciben palabras de hasta 21 bits.
 
 El algoritmo de Huffman garantiza que este código es óptimo: para la distribución de
@@ -110,8 +110,8 @@ probabilidad de cada carácter fuera una potencia negativa exacta de 2 ($p_k = 2
 decir, una distribución diádica, condición que no se cumple para un texto real como el
 utilizado.
 
-Esta propiedad se refleja en que la longitud media obtenida (4.6307 bits/símbolo) se
-aproxima a la entropía de la fuente (4.6046 bits/símbolo), con una eficiencia
+Esta propiedad se refleja en que la longitud media obtenida (\num{4.6307} bits/símbolo) se
+aproxima a la entropía de la fuente (\num{4.6046} bits/símbolo), con una eficiencia
 $\eta = L_{min}/\bar{L} = \qty{99.44}{\percent}$. La pequeña diferencia remanente no se debe a
 una limitación del algoritmo de Huffman, sino a que las longitudes de código deben ser números enteros de bits, mientras que
 la entropía admite valores fraccionarios.
@@ -119,24 +119,24 @@ la entropía admite valores fraccionarios.
 \subsubsection{Ejemplo de codificación y decodificación}
 
 A modo de ejemplo, se tomó la línea de texto \texttt{"May the Force be with you."}
-(27 caracteres) y se aplicaron las funciones de codificación y decodificación
+(26 caracteres) y se aplicaron las funciones de codificación y decodificación
 desarrolladas, obteniéndose:
 
 \begin{center}
 	\begin{tabular}{l p{0.75\textwidth}}
 		\toprule
-		\textbf{Original}     & \texttt{May the Force be with you.} \\
-		\textbf{Codificada}   & \texttt{\seqsplit{000001111111110100101100011101110001101010110001011010000100110001101011111000110010010110100011101011010010010111101100110}} \\
-		\textbf{Decodificada} & \texttt{May the Force be with you.} \\
+		Original     & \texttt{May the Force be with you.} \\
+		Codificada   & \texttt{\seqsplit{000001111111110100101100011101110001101010110001011010000100110001101011111000110010010110100011101011010010010111101100110}} \\
+		Decodificada & \texttt{May the Force be with you.} \\
 		\bottomrule
 	\end{tabular}
 \end{center}
 
-La línea codificada utiliza 123 bits para sus 27 caracteres, es decir, 4.56 bits/símbolo en
-promedio, un valor cercano a la longitud media general del código (4.6307 bits/símbolo). La
-frase de prueba utiliza caracteres relativamente comunes, por lo que su longitud resulta
-levemente menor al promedio del texto completo, que incluye también caracteres poco frecuentes
-codificados con palabras más largas. Se verifica además que la línea decodificada coincide
+La línea codificada utiliza 123 bits para sus 26 caracteres, es decir, \num{4.73} bits/símbolo en
+promedio, un valor cercano a la longitud media general del código (\num{4.6307} bits/símbolo). Dado que la
+frase de prueba no proviene del mismo conjunto con el que se creó el código, su longitud resulta
+levemente superior al promedio del texto completo
+Se verifica además que la línea decodificada coincide
 exactamente con la original, confirmando el correcto funcionamiento del codificador y el
 decodificador de fuente.
 
@@ -149,16 +149,16 @@ cota teórica de Shannon y con un código de longitud fija (código ASCII extend
 
 \begin{table}[htpb]
 	\centering
-	\begin{tabular}{ll}
+	\begin{tabular}{lSl}
 		\toprule
-		\textbf{Magnitud} & \textbf{Valor} \\
+        {Magnitud} & {Valor} & {Unidad} \\
 		\midrule
-		Entropía de la fuente, $H(\mathcal{S})$                  & 4.6046 bits/símbolo \\
-		Longitud mínima (cota de Shannon), $L_{min}$              & 4.6046 bits/símbolo \\
-		Longitud media del código, $\bar{L}$                      & 4.6307 bits/símbolo \\
-		Varianza del código, $\sigma_L^2$                         & 3.4904 (bits/símbolo)$^2$ \\
-		Eficiencia, $\eta = L_{min}/\bar{L}$                      & \qty{99.44}{\percent} \\
-		Longitud de un código de longitud fija (ASCII extendido)  & 8 bits/símbolo \\
+        Entropía de la fuente, $H(\mathcal{S})$                   & 4.6046  & bits/símbolo \\
+		Longitud mínima (cota de Shannon), $L_{min}$              & 4.6046  & bits/símbolo \\
+        Longitud media del código, $\bar{L}$                      & 4.6307  & bits/símbolo \\
+        Varianza del código, $\sigma_L^2$                         & 3.4904  & (bits/símbolo)$^2$ \\
+        Eficiencia, $\eta = L_{min}/\bar{L}$                      & 99.44   & \unit{\percent} \\
+        Longitud de un código de longitud fija (ASCII extendido)  & 8       & bits/símbolo \\
 		\bottomrule
 	\end{tabular}
 	\caption{Entropía de la fuente, longitud mínima, longitud media, varianza y
@@ -170,7 +170,7 @@ cota teórica de Shannon y con un código de longitud fija (código ASCII extend
 Se observa que $L_{min} = H(\mathcal{S})$, dado que la cota de Shannon se calcula como
 $L_{min} = H(\mathcal{S})/\log_2 r$ y, al tratarse de un código binario, $r = 2$ y
 $\log_2 2 = 1$. Asimismo, la longitud media del código diseñado sobre este texto
-(4.6307 bits/símbolo) resulta considerablemente menor que la longitud fija de
+(\num{4.6307} bits/símbolo) resulta considerablemente menor que la longitud fija de
 8 bits/símbolo que requeriría el código ASCII extendido, evidenciando la ventaja
 de emplear un código de longitud variable adaptado a la estadística particular de la
 fuente.
@@ -187,7 +187,7 @@ extendido de 8 bits por carácter).
 	\centering
 	\begin{tabular}{lS[table-format=8.0]}
 		\toprule
-		\textbf{Esquema de codificación} & \textbf{Bits totales} \\
+		{Esquema de codificación} & {Bits totales} \\
 		\midrule
 		Código de Huffman diseñado                 & 25174699 \\
 		Código de longitud fija (ASCII, 8 bits)    & 43491800 \\
