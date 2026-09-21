@@ -36,9 +36,7 @@ def main():
 
     print('=' * 72)
     print('Char\tCounts\tProbability\tCode')
-    for k in sorted(range(128),
-                    key=lambda k: probs[k],
-                    reverse=True):
+    for k in sorted(range(256), key=lambda k: probs[k], reverse=True):
         p = probs[k]
         if p == 0:
             continue
