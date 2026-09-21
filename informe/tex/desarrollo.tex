@@ -9,14 +9,14 @@ secuencialmente las distintas etapas del sistema de comunicaciones: Transmisor, 
 Siguiendo el esquema conceptual del enunciado, el programa se estructura en cuatro secciones:
 
 \begin{itemize}
-	\item \textbf{Datos y control}: lectura del archivo de texto y definición de los parámetros
-	de la simulación (esquema y orden de modulación, habilitación de codificación de canal,
-	relación SNR, etc.).
-	\item \textbf{Transmisor}: codificador de fuente, codificador de canal y modulador.
-	\item \textbf{Canal}: modelado de la respuesta impulsiva del canal y del ruido aditivo
-	blanco gaussiano (AWGN).
-	\item \textbf{Receptor}: demodulador, decodificador de canal y decodificador de fuente,
-	hasta la reconstrucción del archivo de texto recibido.
+    \item \textbf{Datos y control}: lectura del archivo de texto y definición de los parámetros
+    de la simulación (esquema y orden de modulación, habilitación de codificación de canal,
+    relación SNR, etc.).
+    \item \textbf{Transmisor}: codificador de fuente, codificador de canal y modulador.
+    \item \textbf{Canal}: modelado de la respuesta impulsiva del canal y del ruido aditivo
+    blanco gaussiano (AWGN).
+    \item \textbf{Receptor}: demodulador, decodificador de canal y decodificador de fuente,
+    hasta la reconstrucción del archivo de texto recibido.
 \end{itemize}
 
 Los bloques recíprocos del transmisor y del receptor (por ejemplo, modulador y demodulador) se
@@ -36,30 +36,30 @@ Para la construcción del código se relevó la frecuencia de aparición de cada
 binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
 
 \begin{table}[htpb]
-	\centering
-	\begin{tabular}{c S[table-format=7.0] S[table-format=1.5] l}
-		\toprule
+    \centering
+    \begin{tabular}{c S[table-format=7.0] S[table-format=1.5] l}
+        \toprule
         Caracter & {Cantidad} & {Probabilidad} & Código \\
-		\midrule
-		(espacio)                      & 1281576 & 0.23574 & \texttt{01}     \\
-		\texttt{e}                     & 403875  & 0.07429 & \texttt{1100}   \\
-		\texttt{t}                     & 289404  & 0.05323 & \texttt{1000}   \\
-		\texttt{o}                     & 280908  & 0.05167 & \texttt{0010}   \\
-		\texttt{a}                     & 244267  & 0.04493 & \texttt{11111}  \\
-		\texttt{h}                     & 218199  & 0.04014 & \texttt{11101}  \\
-		\texttt{n}                     & 215562  & 0.03965 & \texttt{11100}  \\
-		\texttt{s}                     & 214679  & 0.03949 & \texttt{11011}  \\
-		\texttt{r}                     & 208488  & 0.03835 & \texttt{11010}  \\
-		\texttt{i}                     & 197778  & 0.03638 & \texttt{10110}  \\
-		\texttt{l}                     & 145917  & 0.02684 & \texttt{00111}  \\
-		\texttt{d}                     & 133557  & 0.02457 & \texttt{00011}  \\
-		\verb|\n|                      & 124185  & 0.02284 & \texttt{00001}  \\
-		\texttt{u}                     & 114637  & 0.02109 & \texttt{111101} \\
-		\texttt{m}                     & 95431   & 0.01755 & \texttt{101110} \\
-		\bottomrule
-	\end{tabular}
-	\caption{Caracteres más frecuentes del texto, con su cantidad de ocurrencias, probabilidad y palabra de código de Huffman asignada.}
-	\label{tab:caracteres-frecuentes}
+        \midrule
+        (espacio)                      & 1281576 & 0.23574 & \texttt{01}     \\
+        \texttt{e}                     & 403875  & 0.07429 & \texttt{1100}   \\
+        \texttt{t}                     & 289404  & 0.05323 & \texttt{1000}   \\
+        \texttt{o}                     & 280908  & 0.05167 & \texttt{0010}   \\
+        \texttt{a}                     & 244267  & 0.04493 & \texttt{11111}  \\
+        \texttt{h}                     & 218199  & 0.04014 & \texttt{11101}  \\
+        \texttt{n}                     & 215562  & 0.03965 & \texttt{11100}  \\
+        \texttt{s}                     & 214679  & 0.03949 & \texttt{11011}  \\
+        \texttt{r}                     & 208488  & 0.03835 & \texttt{11010}  \\
+        \texttt{i}                     & 197778  & 0.03638 & \texttt{10110}  \\
+        \texttt{l}                     & 145917  & 0.02684 & \texttt{00111}  \\
+        \texttt{d}                     & 133557  & 0.02457 & \texttt{00011}  \\
+        \verb|\n|                      & 124185  & 0.02284 & \texttt{00001}  \\
+        \texttt{u}                     & 114637  & 0.02109 & \texttt{111101} \\
+        \texttt{m}                     & 95431   & 0.01755 & \texttt{101110} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Caracteres más frecuentes del texto, con su cantidad de ocurrencias, probabilidad y palabra de código de Huffman asignada.}
+    \label{tab:caracteres-frecuentes}
 \end{table}
 
 \subsubsection{Verificación de código prefijo}
@@ -67,15 +67,15 @@ binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro comp
 Se puede verificar que ninguna palabra de código es prefijo de otra tomando, por ejemplo, tres palabras que comparten los primeros bits:
 
 \begin{center}
-	\begin{tabular}{cl}
-		\toprule
+    \begin{tabular}{cl}
+        \toprule
         Caracter & {Código} \\
-		\midrule
-		\texttt{e} & \texttt{1100} \\
-		\texttt{n} & \texttt{11100} \\
-		\texttt{a} & \texttt{11111} \\
-		\bottomrule
-	\end{tabular}
+        \midrule
+        \texttt{e} & \texttt{1100} \\
+        \texttt{n} & \texttt{11100} \\
+        \texttt{a} & \texttt{11111} \\
+        \bottomrule
+    \end{tabular}
 \end{center}
 
 Las tres palabras comienzan con \texttt{11}, pero al comparar \texttt{1100} (\texttt{e}) con
@@ -123,13 +123,13 @@ A modo de ejemplo, se tomó la línea de texto \texttt{"May the Force be with yo
 desarrolladas, obteniéndose:
 
 \begin{center}
-	\begin{tabular}{l p{0.75\textwidth}}
-		\toprule
-		Original     & \texttt{May the Force be with you.} \\
-		Codificada   & \texttt{\seqsplit{000001111111110100101100011101110001101010110001011010000100110001101011111000110010010110100011101011010010010111101100110}} \\
-		Decodificada & \texttt{May the Force be with you.} \\
-		\bottomrule
-	\end{tabular}
+    \begin{tabular}{l p{0.75\textwidth}}
+        \toprule
+        Original     & \texttt{May the Force be with you.} \\
+        Codificada   & \texttt{\seqsplit{000001111111110100101100011101110001101010110001011010000100110001101011111000110010010110100011101011010010010111101100110}} \\
+        Decodificada & \texttt{May the Force be with you.} \\
+        \bottomrule
+    \end{tabular}
 \end{center}
 
 La línea codificada utiliza 123 bits para sus 26 caracteres, es decir, \num{4.73} bits/símbolo en
@@ -148,23 +148,23 @@ cota teórica de Shannon y con un código de longitud fija (código ASCII extend
 8 bits).
 
 \begin{table}[htpb]
-	\centering
-	\begin{tabular}{lSl}
-		\toprule
+    \centering
+    \begin{tabular}{lSl}
+        \toprule
         {Magnitud} & {Valor} & {Unidad} \\
-		\midrule
+        \midrule
         Entropía de la fuente, $H(\mathcal{S})$                   & 4.6046  & bits/símbolo \\
-		Longitud mínima (cota de Shannon), $L_{min}$              & 4.6046  & bits/símbolo \\
+        Longitud mínima (cota de Shannon), $L_{min}$              & 4.6046  & bits/símbolo \\
         Longitud media del código, $\bar{L}$                      & 4.6307  & bits/símbolo \\
         Varianza del código, $\sigma_L^2$                         & 3.4904  & (bits/símbolo)$^2$ \\
         Eficiencia, $\eta = L_{min}/\bar{L}$                      & 99.44   & \unit{\percent} \\
         Longitud de un código de longitud fija (ASCII extendido)  & 8       & bits/símbolo \\
-		\bottomrule
-	\end{tabular}
-	\caption{Entropía de la fuente, longitud mínima, longitud media, varianza y
-		eficiencia del código de Huffman obtenido para el texto de prueba, comparado con un
-		código de longitud fija.}
-	\label{tab:resumen-entropia}
+        \bottomrule
+    \end{tabular}
+    \caption{Entropía de la fuente, longitud mínima, longitud media, varianza y
+        eficiencia del código de Huffman obtenido para el texto de prueba, comparado con un
+        código de longitud fija.}
+    \label{tab:resumen-entropia}
 \end{table}
 
 Se observa que $L_{min} = H(\mathcal{S})$, dado que la cota de Shannon se calcula como
@@ -184,18 +184,18 @@ cantidad de bits que se necesitarían utilizando un código de longitud fija (AS
 extendido de 8 bits por caracter).
 
 \begin{table}[htpb]
-	\centering
-	\begin{tabular}{lS[table-format=8.0]}
-		\toprule
-		{Esquema de codificación} & {Bits totales} \\
-		\midrule
-		Código de Huffman diseñado                 & 25174699 \\
-		Código de longitud fija (ASCII, 8 bits)    & 43491800 \\
-		\bottomrule
-	\end{tabular}
-	\caption{Cantidad total de bits necesarios para codificar el texto completo,
-		comparando el código de Huffman diseñado con un código de longitud fija.}
-	\label{tab:bits-totales}
+    \centering
+    \begin{tabular}{lS[table-format=8.0]}
+        \toprule
+        {Esquema de codificación} & {Bits totales} \\
+        \midrule
+        Código de Huffman diseñado                 & 25174699 \\
+        Código de longitud fija (ASCII, 8 bits)    & 43491800 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cantidad total de bits necesarios para codificar el texto completo,
+        comparando el código de Huffman diseñado con un código de longitud fija.}
+    \label{tab:bits-totales}
 \end{table}
 
 El uso del código de Huffman diseñado representa un ahorro de \qty{42.12}{\percent} en
