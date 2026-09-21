@@ -31,7 +31,7 @@ Como texto de prueba para el análisis se utilizó un archivo conteniendo las ob
 
 \subsubsection{Distribución de caracteres y código asignado}
 
-Para la construcción del código se relevó la frecuencia de aparición de cada carácter sobre el texto completo a transmitir, obteniéndose un alfabeto de 84 símbolos distintos
+Para la construcción del código se relevó la frecuencia de aparición de cada caracter sobre el texto completo a transmitir, obteniéndose un alfabeto de 84 símbolos distintos
 (letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). Observar que no todos los 128 caracteres posibles del código ASCII aparecen en el texto, en particular faltna la mayoría de los carcteres de control, así como algunos símbolos infrecuentes. El cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
 binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
 
@@ -39,7 +39,7 @@ binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro comp
 	\centering
 	\begin{tabular}{c S[table-format=7.0] S[table-format=1.5] l}
 		\toprule
-        Carácter & {Cantidad} & {Probabilidad} & Código \\
+        Caracter & {Cantidad} & {Probabilidad} & Código \\
 		\midrule
 		(espacio)                      & 1281576 & 0.23574 & \texttt{01}     \\
 		\texttt{e}                     & 403875  & 0.07429 & \texttt{1100}   \\
@@ -69,7 +69,7 @@ Se puede verificar que ninguna palabra de código es prefijo de otra tomando, po
 \begin{center}
 	\begin{tabular}{cl}
 		\toprule
-        Carácter & {Código} \\
+        Caracter & {Código} \\
 		\midrule
 		\texttt{e} & \texttt{1100} \\
 		\texttt{n} & \texttt{11100} \\
@@ -106,7 +106,7 @@ El algoritmo de Huffman garantiza que este código es óptimo: para la distribuc
 probabilidades dada, tiene la menor longitud promedio $\bar{L}$ posible dentro de la clase
 completa de códigos unívocamente decodificables, no solo entre los códigos prefijo. Sin
 embargo, no se trata de un código absolutamente óptimo, ya que esto exigiría que la
-probabilidad de cada carácter fuera una potencia negativa exacta de 2 ($p_k = 2^{-l_k}$), es
+probabilidad de cada caracter fuera una potencia negativa exacta de 2 ($p_k = 2^{-l_k}$), es
 decir, una distribución diádica, condición que no se cumple para un texto real como el
 utilizado.
 
@@ -181,7 +181,7 @@ El cuadro~\ref{tab:bits-totales} compara la cantidad total de bits necesarios pa
 codificar el texto completo utilizado (\texttt{shakespeare.txt}, de
 \num{5436475} caracteres) empleando el código de Huffman diseñado, frente a la
 cantidad de bits que se necesitarían utilizando un código de longitud fija (ASCII
-extendido de 8 bits por carácter).
+extendido de 8 bits por caracter).
 
 \begin{table}[htpb]
 	\centering
@@ -200,6 +200,6 @@ extendido de 8 bits por carácter).
 
 El uso del código de Huffman diseñado representa un ahorro de \qty{42.12}{\percent} en
 la cantidad de bits necesarios para transmitir el texto completo, respecto de utilizar
-un código de longitud fija de 8 bits por carácter.
+un código de longitud fija de 8 bits por caracter.
 
 % vim: ts=4 sts=4 sw=4 et lbr
