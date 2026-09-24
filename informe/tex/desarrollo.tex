@@ -32,7 +32,7 @@ Como texto de prueba para el análisis se utilizó un archivo conteniendo las ob
 \subsubsection{Distribución de caracteres y código asignado}
 
 Para la construcción del código se relevó la frecuencia de aparición de cada caracter sobre el texto completo a transmitir, obteniéndose un alfabeto de 84 símbolos distintos
-(letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). Observar que no todos los 128 caracteres posibles del código ASCII aparecen en el texto, en particular faltna la mayoría de los carcteres de control, así como algunos símbolos infrecuentes. El cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
+(letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). Observar que no todos los 128 caracteres posibles del código ASCII aparecen en el texto, en particular faltna la mayoría de los carcteres de control, así como algunos símbolos infrecuentes. El Cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
 binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
 
 \begin{table}[htpb]
@@ -142,7 +142,7 @@ decodificador de fuente.
 
 \subsubsection{Entropía, longitud del código y eficiencia}
 
-El cuadro~\ref{tab:resumen-entropia} resume los parámetros característicos del código
+El Cuadro~\ref{tab:resumen-entropia} resume los parámetros característicos del código
 obtenido para el texto de prueba utilizado (\texttt{shakespeare.txt}), comparados con la
 cota teórica de Shannon y con un código de longitud fija (código ASCII extendido de
 8 bits).
@@ -177,7 +177,7 @@ fuente.
 
 \subsubsection{Cantidad de bits necesarios para el texto completo}
 
-El cuadro~\ref{tab:bits-totales} compara la cantidad total de bits necesarios para
+El Cuadro~\ref{tab:bits-totales} compara la cantidad total de bits necesarios para
 codificar el texto completo utilizado (\texttt{shakespeare.txt}, de
 \num{5436475} caracteres) empleando el código de Huffman diseñado, frente a la
 cantidad de bits que se necesitarían utilizando un código de longitud fija (ASCII
