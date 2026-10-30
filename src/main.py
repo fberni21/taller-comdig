@@ -1,6 +1,10 @@
 import argparse
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 import source
+from modulator import FskModulator, QamModulator
 
 from utils import compute_char_probs, compute_entropy, is_prefix_code
 
@@ -8,10 +12,17 @@ from utils import compute_char_probs, compute_entropy, is_prefix_code
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help='input file name')
+    parser.add_argument('mod_scheme', choices=['QAM', 'FSK'],
+                        help='modulation scheme')
+    parser.add_argument('mod_order', choices=[2, 4, 8, 16], type=int,
+                        help='modulation order')
     parser.add_argument('--sample', default=None,
                         help='sample line to encode and decode')
     parser.add_argument('--output', default='decoded.txt',
                         help='decoded file name (default: decoded.txt)')
+    parser.add_argument('--plot-constellation',
+                        action=argparse.BooleanOptionalAction,
+                        help='plot constellation (only for 2D constellations)')
     args = parser.parse_args()
 
     with open(args.filename, 'r') as file:
@@ -78,7 +89,58 @@ def main():
     print(f'Compression savings   : {100 * compression_savings:.2f} %')
     print(f'Output equal?         : {text == decoded}')
 
+    if args.mod_scheme == 'FSK':
+        modulator = FskModulator(order=args.mod_order)
+    elif args.mod_scheme == 'QAM':
+        modulator = QamModulator(order=args.mod_order)
+
+    modulated = modulator.modulate(encoded)
+
+    print('=' * 72)
+    mean_energies = modulator.compute_mean_energies(modulated)
+    print(f'Mean energy per symbol : {mean_energies[0]:.4f} J/symbol')
+    print(f'Mean energy per bit    : {mean_energies[1]:.4f} J/bit')
+
+    if args.plot_constellation:
+        plot_constellation(modulator.mapping)
+
     return 0
+
+
+def plot_constellation(mapping):
+    symbols = np.array(list(mapping.values()))
+
+    if symbols.shape[1] != 2:
+        raise ValueError('constellation must have 2 dimensions')
+
+    x_min, x_max = np.min(symbols[:, 0]), np.max(symbols[:, 0])
+    y_min, y_max = np.min(symbols[:, 1]), np.max(symbols[:, 1])
+    x_len = x_max - x_min
+    y_len = y_max - y_min
+    xx, yy = np.meshgrid(
+            np.linspace(x_min - 0.2*x_len, x_max + 0.2*x_len, 200),
+            np.linspace(y_min - 0.2*y_len, y_max + 0.2*y_len, 200))
+
+    # Extraer esta lógica a una función porque va a servir para
+    # la demodulación también
+    points = np.c_[xx.ravel(), yy.ravel()]
+    distances = np.linalg.norm(points[:, None, :] - symbols, axis=-1)
+    Z = np.argmin(distances, axis=1).reshape(xx.shape)
+
+    cmap = 'tab20'
+    plt.figure(figsize=(6, 6))
+    plt.pcolormesh(xx, yy, Z, alpha=0.2, cmap=cmap)
+    plt.contour(xx, yy, Z, linestyle='--', colors='black', levels=len(mapping))
+
+    plt.scatter(symbols[:, 0], symbols[:, 1],
+                c=list(int(k, 2) for k in mapping), cmap=cmap,
+                edgecolors='black', label='Símbolos')
+
+    for label, symbol in mapping.items():
+        plt.text(symbol[0] + 0.02*x_len, symbol[1] + 0.02*y_len, repr(label))
+
+    plt.legend()
+    plt.show()
 
 
 if __name__ == '__main__':
