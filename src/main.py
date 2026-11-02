@@ -3,6 +3,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 
+from channel import Channel
 import source
 from modulator import FskModulator, QamModulator
 
@@ -101,13 +102,20 @@ def main():
     print(f'Mean energy per symbol : {mean_energies[0]:.4f} J/symbol')
     print(f'Mean energy per bit    : {mean_energies[1]:.4f} J/bit')
 
+    channel = Channel(N0=0.25)
+    symbols_noisy = channel.transmit(modulated)
+
     if args.plot_constellation:
         plot_constellation(modulator.mapping)
+
+        samples = np.random.choice(range(symbols_noisy.shape[0]),
+                                   1000, replace=False)
+        plot_constellation(modulator.mapping, symbols_noisy[samples])
 
     return 0
 
 
-def plot_constellation(mapping):
+def plot_constellation(mapping, samples=None):
     symbols = np.array(list(mapping.values()))
 
     if symbols.shape[1] != 2:
@@ -131,6 +139,11 @@ def plot_constellation(mapping):
     plt.figure(figsize=(6, 6))
     plt.pcolormesh(xx, yy, Z, alpha=0.2, cmap=cmap)
     plt.contour(xx, yy, Z, linestyle='--', colors='black', levels=len(mapping))
+
+    if samples is not None:
+        plt.scatter(samples[:, 0], samples[:, 1],
+                    alpha=0.5, marker='x',
+                    label='Recibidos')
 
     plt.scatter(symbols[:, 0], symbols[:, 1],
                 c=list(int(k, 2) for k in mapping), cmap=cmap,
