@@ -67,6 +67,6 @@ class QamModulator(Modulator):
 
         for j in range(self.order):
             # Para energía media de bit unitaria:
-            d = sqrt(6 * self.bits_per_symbol / (self.order - 1))   # Verificar
+            d = sqrt(6 * self.bits_per_symbol / (self.order - 1))
             symbol = (np.array([j // side, j % side]) - 0.5*(side - 1)) * d
             self.mapping[QamModulator.GRAY[self.order][j]] = symbol
