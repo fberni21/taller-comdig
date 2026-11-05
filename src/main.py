@@ -95,12 +95,13 @@ def main():
     elif args.mod_scheme == 'QAM':
         modulator = QamModulator(order=args.mod_order)
 
-    modulated = modulator.modulate(encoded)
+    modulated, pad = modulator.modulate(encoded)
 
     print('=' * 72)
     mean_energies = modulator.compute_mean_energies(modulated)
     print(f'Mean energy per symbol : {mean_energies[0]:.4f} J/symbol')
     print(f'Mean energy per bit    : {mean_energies[1]:.4f} J/bit')
+    print(f'Padding bits           : {pad}')
 
     channel = Channel(N0=0.25)
     symbols_noisy = channel.transmit(modulated)

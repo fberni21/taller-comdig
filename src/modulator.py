@@ -5,8 +5,12 @@ import numpy as np
 
 class Modulator:
     def modulate(self, bits):
-        # Nota: si len(bits) no es múltiplo de k, se descartan bits finales
-        num_symbols = len(bits) // self.bits_per_symbol
+        # Nota: si len(bits) no es múltiplo de k,
+        # se agregan bits de padding (ceros)
+        num_symbols = (len(bits) - 1) // self.bits_per_symbol + 1
+        pad = self.bits_per_symbol * num_symbols - len(bits)
+        bits = bits + "0" * pad
+
         modulated = np.zeros((num_symbols, self.dimension))
 
         start = 0
@@ -15,7 +19,7 @@ class Modulator:
             modulated[i] = self.mapping[bits[start:end]]
             start = end
 
-        return modulated
+        return modulated, pad
 
     # Modificar para cuando se tenga codificación de canal
     def compute_mean_energies(self, symbols):
