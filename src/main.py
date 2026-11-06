@@ -1,4 +1,5 @@
 import argparse
+from fileinput import filename
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,8 +7,9 @@ import numpy as np
 from channel import Channel
 import source
 from modulator import FskModulator, QamModulator
+from demodulator import Demodulator
 
-from utils import compute_char_probs, compute_entropy, is_prefix_code
+from utils import compute_char_probs, compute_entropy, is_prefix_code, compute_symbol_error_rate, compute_bit_error_rate
 
 
 def main():
@@ -24,6 +26,9 @@ def main():
     parser.add_argument('--plot-constellation',
                         action=argparse.BooleanOptionalAction,
                         help='plot constellation (only for 2D constellations)')
+    parser.add_argument('--plot-histogram',
+                        action=argparse.BooleanOptionalAction,
+                        help='plot histogram of modulated symbols')
     args = parser.parse_args()
 
     with open(args.filename, 'r') as file:
@@ -103,8 +108,23 @@ def main():
     print(f'Mean energy per bit    : {mean_energies[1]:.4f} J/bit')
     print(f'Padding bits           : {pad}')
 
+    if args.plot_histogram:
+        plot_symbol_histogram(
+            modulator.mapping, modulated,
+            f'hist_{args.mod_scheme}_{args.mod_order}.png')
+
     channel = Channel(N0=0.25)
     symbols_noisy = channel.transmit(modulated)
+
+    demodulator = Demodulator(modulator.mapping)
+    demodulated, points_decided = demodulator.demodulate(symbols_noisy, pad)
+
+    Pe = compute_symbol_error_rate(modulated, points_decided)
+    Pb = compute_bit_error_rate(encoded, demodulated)
+
+    print('=' * 72)
+    print(f'Symbol error rate (Pe) : {Pe:.6f}')
+    print(f'Bit error rate (Pb)    : {Pb:.6f}')
 
     if args.plot_constellation:
         plot_constellation(modulator.mapping)
@@ -154,6 +174,46 @@ def plot_constellation(mapping, samples=None):
         plt.text(symbol[0] + 0.02*x_len, symbol[1] + 0.02*y_len, repr(label))
 
     plt.legend()
+    plt.show()
+
+def plot_symbol_histogram(mapping, symbols, filename=None):
+    # Cuenta cuántas veces aparece cada símbolo de la constelación en
+    # `symbols` (salida del modulador), y grafica cantidad y probabilidad.
+    labels = sorted(mapping.keys())
+    points = np.array([mapping[label] for label in labels])
+    total = symbols.shape[0]
+    order = len(labels)
+
+    # Un símbolo coincide con el punto p si TODAS sus coordenadas son iguales
+    counts = np.array([np.sum(np.all(symbols == p, axis=1)) for p in points])
+    probs = counts / total
+
+    print('=' * 72)
+    print('Symbol\tCount\t\tProbability')
+    for label, count, prob in zip(labels, counts, probs):
+        print(f'{label}\t{count:<10d}\t{prob:.6f}')
+    print(f'Equiprobable reference : {1 / order:.6f}')
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    x = np.arange(order)
+    ax.bar(x, counts, color='tab:blue', edgecolor='black')
+    ax.axhline(total / order, color='tab:red', linestyle='--',
+               label=f'Equiprobable (1/M = {1 / order:.4f})')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=45 if order > 8 else 0)
+    ax.set_xlabel('Símbolo')
+    ax.set_ylabel('Cantidad')
+
+    # Segundo eje vertical: la misma barra leída como probabilidad
+    prob_ax = ax.secondary_yaxis('right',
+                                 functions=(lambda c: c / total,
+                                            lambda p: p * total))
+    prob_ax.set_ylabel('Probabilidad')
+
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.0), frameon=False)
+    fig.tight_layout()
+    if filename is not None:
+        fig.savefig(filename)
     plt.show()
 
 

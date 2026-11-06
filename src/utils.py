@@ -20,3 +20,13 @@ def is_prefix_code(code_map):
             if this.startswith(that) or that.startswith(this):
                 return False
     return True
+
+
+def compute_symbol_error_rate(original_symbols, received_symbols):
+    return np.mean(np.any(original_symbols != received_symbols, axis=1))
+
+
+def compute_bit_error_rate(original_bits, received_bits):
+    original_bits = np.array(list(original_bits))
+    received_bits = np.array(list(received_bits))
+    return np.mean(original_bits != received_bits)
