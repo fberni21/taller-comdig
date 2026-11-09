@@ -1,205 +1,467 @@
-\section{Desarrollo}
 
-\subsection{Programa principal --- Datos, control y estructura general del sistema}
+\section{Modulación y demodulación en banda base y banda pasante}
 
-El sistema se organiza en torno a un programa principal (\texttt{main.py}) que recibe como
-parámetro de entrada la ruta de un archivo de texto a transmitir, y desde el cual se invocan
-secuencialmente las distintas etapas del sistema de comunicaciones: Transmisor, Canal y Receptor.
+\subsection{Caracterización de las modulaciones}
 
-Siguiendo el esquema conceptual del enunciado, el programa se estructura en cuatro secciones:
+Se implementaron esquemas de modulación M-FSK, para
+$M \in \{2,4,8,16\}$, y M-QAM cuadrada, para
+$M \in \{4,16\}$. En ambos casos, cada símbolo representa
+$k=\log_2(M)$ bits de información.
 
-\begin{itemize}
-    \item \textbf{Datos y control}: lectura del archivo de texto y definición de los parámetros
-    de la simulación (esquema y orden de modulación, habilitación de codificación de canal,
-    relación SNR, etc.).
-    \item \textbf{Transmisor}: codificador de fuente, codificador de canal y modulador.
-    \item \textbf{Canal}: modelado de la respuesta impulsiva del canal y del ruido aditivo
-    blanco gaussiano (AWGN).
-    \item \textbf{Receptor}: demodulador, decodificador de canal y decodificador de fuente,
-    hasta la reconstrucción del archivo de texto recibido.
-\end{itemize}
+La energía de un símbolo se calcula a partir de sus componentes
+en una base ortonormal:
 
-Los bloques recíprocos del transmisor y del receptor (por ejemplo, modulador y demodulador) se
-desarrollan en conjunto, de forma tal que cada etapa de la cadena admita su correspondiente
-inversa en el extremo receptor. Las secciones siguientes de este informe detallan el diseño e
-implementación de cada uno de estos bloques.
+\begin{equation}
+    E(s_i)=\|\mathbf{s}_i\|^2.
+\end{equation}
 
-\subsection{Codificación y decodificación de fuente}
+La energía media por símbolo y la energía media por bit se
+definen como
 
-Como texto de prueba para el análisis se utilizó un archivo conteniendo las obras completas de William Shakespeare (\texttt{shakespeare.txt}), de aproximadamente
-5.4 millones de caracteres, lo que permite obtener estadísticas robustas sobre la distribución de probabilidad de los caracteres del idioma inglés.
+\begin{equation}
+    \overline{E}_s =
+    \sum_{i=1}^{M} P(s_i)\|\mathbf{s}_i\|^2,
+    \qquad
+    \overline{E}_b =
+    \frac{\overline{E}_s}{\log_2(M)}.
+\end{equation}
 
-\subsubsection{Distribución de caracteres y código asignado}
+Para la caracterización teórica se consideran símbolos
+equiprobables y la normalización $E_b=1$. En consecuencia,
+$E_s=\log_2(M)$.
 
-Para la construcción del código se relevó la frecuencia de aparición de cada caracter sobre el texto completo a transmitir, obteniéndose un alfabeto de 84 símbolos distintos
-(letras mayúsculas y minúsculas, dígitos, signos de puntuación y caracteres de control). Observar que no todos los 128 caracteres posibles del código ASCII aparecen en el texto, en particular faltna la mayoría de los carcteres de control, así como algunos símbolos infrecuentes. El Cuadro~\ref{tab:caracteres-frecuentes} muestra, a modo de resumen, los 15 caracteres más frecuentes junto con su cantidad de ocurrencias, probabilidad y la palabra de código
-binario asignada por el algoritmo de Huffman de varianza mínima. El cuadro completo, con los 84 caracteres del alfabeto, se encuentra en el Apéndice~\ref{app:tabla-completa}.
+La Tabla~\ref{tab:modulaciones} resume las características
+de las modulaciones implementadas. Las expresiones de
+probabilidad de error corresponden a un canal AWGN con
+detección coherente.
 
-\begin{table}[htpb]
+\begin{table}[htbp]
     \centering
-    \begin{tabular}{c S[table-format=7.0] S[table-format=1.5] r}
-        \toprule
-        Caracter & {Cantidad} & {Probabilidad} & Código \\
-        \midrule
-        (espacio)                      & 1281576 & 0.23574 & \texttt{01}     \\
-        \texttt{e}                     & 403875  & 0.07429 & \texttt{1100}   \\
-        \texttt{t}                     & 289404  & 0.05323 & \texttt{1000}   \\
-        \texttt{o}                     & 280908  & 0.05167 & \texttt{0010}   \\
-        \texttt{a}                     & 244267  & 0.04493 & \texttt{11111}  \\
-        \texttt{h}                     & 218199  & 0.04014 & \texttt{11101}  \\
-        \texttt{n}                     & 215562  & 0.03965 & \texttt{11100}  \\
-        \texttt{s}                     & 214679  & 0.03949 & \texttt{11011}  \\
-        \texttt{r}                     & 208488  & 0.03835 & \texttt{11010}  \\
-        \texttt{i}                     & 197778  & 0.03638 & \texttt{10110}  \\
-        \texttt{l}                     & 145917  & 0.02684 & \texttt{00111}  \\
-        \texttt{d}                     & 133557  & 0.02457 & \texttt{00011}  \\
-        \verb|\n|                      & 124185  & 0.02284 & \texttt{00001}  \\
-        \texttt{u}                     & 114637  & 0.02109 & \texttt{111101} \\
-        \texttt{m}                     & 95431   & 0.01755 & \texttt{101110} \\
-        \bottomrule
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        Modulación & $M$ & $E_s$ & $E_b$ & Dimensión \\
+        \hline
+        FSK & 2  & 1 & 1 & 2 \\
+        FSK & 4  & 2 & 1 & 4 \\
+        FSK & 8  & 3 & 1 & 8 \\
+        FSK & 16 & 4 & 1 & 16 \\
+        \hline
+        QAM & 4  & 2 & 1 & 2 \\
+        QAM & 16 & 4 & 1 & 2 \\
+        \hline
     \end{tabular}
-    \caption{Caracteres más frecuentes del texto, con su cantidad de ocurrencias, probabilidad y palabra de código de Huffman asignada.}
-    \label{tab:caracteres-frecuentes}
+    \centering
+    \caption{Caracterización teórica de las modulaciones implementadas.}
+    \label{tab:modulaciones}
+    \small
 \end{table}
 
-\subsubsection{Verificación de código prefijo}
-\label{sec:verificacion-prefijo}
-Se puede verificar que ninguna palabra de código es prefijo de otra tomando, por ejemplo, tres palabras que comparten los primeros bits:
+Para M-QAM cuadrada, la probabilidad teórica de error
+de símbolo es
 
-\begin{center}
-    \begin{tabular}{cr}
-        \toprule
-        Caracter & {Código} \\
-        \midrule
-        \texttt{e} & \texttt{1100} \\
-        \texttt{n} & \texttt{11100} \\
-        \texttt{a} & \texttt{11111} \\
-        \bottomrule
-    \end{tabular}
-\end{center}
+\begin{equation}
+    P_s^{\mathrm{QAM}} =
+    1-
+    \left[
+        1-
+        2\left(1-\frac{1}{\sqrt{M}}\right)
+        Q\left(
+            \sqrt{
+                \frac{3\log_2(M)}{M-1}
+                \frac{E_b}{N_0}
+            }
+        \right)
+    \right]^2,
+    \label{eq:ser_qam}
+\end{equation}
 
-Las tres palabras comienzan con \texttt{11}, pero al comparar \texttt{1100} (\texttt{e}) con
-los primeros 4 bits de \texttt{11100} (\texttt{n}), se obtiene \texttt{1110} $\neq$ \texttt{1100}:
-difieren en el tercer bit, por lo que \texttt{1100} no es prefijo de \texttt{11100}. De la misma
-forma, comparando \texttt{11100} (\texttt{n}) con los primeros 5 bits de \texttt{11111}
-(\texttt{a}), se obtiene \texttt{11111} $\neq$ \texttt{11100}: difieren en el cuarto bit, por lo
-que \texttt{11100} no es prefijo de \texttt{11111}. Este comportamiento no es casual: al provenir
-de las hojas de un árbol binario de Huffman, cada palabra de código corresponde a un camino único
-desde la raíz hasta una hoja, y ningún camino hacia una hoja puede atravesar otra hoja. Por lo
-tanto, el código resultante es necesariamente un código prefijo. Esta propiedad se corroboró
-además de forma programática, comparando exhaustivamente cada par de palabras de código del
-alfabeto completo, confirmando que ninguna es prefijo de otra.
+donde $Q(\cdot)$ representa la función de cola de la
+distribución normal estándar.
 
-\subsubsection{Características del código obtenido}
+Para un etiquetamiento Gray, la probabilidad de error
+de bit puede aproximarse, a relaciones señal-ruido
+suficientemente altas, mediante
 
-El código de Huffman obtenido es, en primer lugar, un código prefijo
-(Sección~\ref{sec:verificacion-prefijo}), por lo que, según el teorema correspondiente, es
-también un código unívocamente decodificable: toda secuencia codificada se corresponde con una
-única secuencia de caracteres de la fuente.
+\begin{equation}
+    P_b^{\mathrm{QAM}} \approx
+    \frac{4}{\log_2(M)}
+    \left(1-\frac{1}{\sqrt{M}}\right)
+    Q\left(
+        \sqrt{
+            \frac{3\log_2(M)}{M-1}
+            \frac{E_b}{N_0}
+        }
+    \right).
+    \label{eq:ber_qam}
+\end{equation}
 
-Es además un código de longitud variable: los caracteres más frecuentes (el espacio,
-\texttt{e}, \texttt{t}, \texttt{o}) reciben palabras de código cortas (entre 2 y 5 bits),
-mientras que los caracteres poco frecuentes (por ejemplo símbolos como \texttt{\&}, \verb|}|
-o \texttt{|}) reciben palabras de hasta 21 bits.
+Para esta aplicación de M-FSK la probabilidad de error de símbolo puede definirse como:
 
-El algoritmo de Huffman garantiza que este código es óptimo: para la distribución de
-probabilidades dada, tiene la menor longitud promedio $\bar{L}$ posible dentro de la clase
-completa de códigos unívocamente decodificables, no solo entre los códigos prefijo. Sin
-embargo, no se trata de un código absolutamente óptimo, ya que esto exigiría que la
-probabilidad de cada caracter fuera una potencia negativa exacta de 2 ($p_k = 2^{-l_k}$), es
-decir, una distribución diádica, condición que no se cumple para un texto real como el
-utilizado.
+\begin{equation}
+    P_s^{\mathrm{FSK}}
+    \approx
+    (M-1)
+    Q\left(\sqrt{\frac{E_s}{N_0}}\right).
+    \label{eq:ser_fsk_aprox}
+\end{equation}
 
-Esta propiedad se refleja en que la longitud media obtenida (\num{4.6307} bits/símbolo) se
-aproxima a la entropía de la fuente (\num{4.6046} bits/símbolo), con una eficiencia
-$\eta = L_{min}/\bar{L} = \qty{99.44}{\percent}$. La pequeña diferencia remanente no se debe a
-una limitación del algoritmo de Huffman, sino a que las longitudes de código deben ser números enteros de bits, mientras que
-la entropía admite valores fraccionarios.
+Dado que en M-FSK ortogonal todos los símbolos se
+encuentran a la misma distancia entre sí, y suponiendo
+símbolos equiprobables, la probabilidad de error de bit
+es
 
-\subsubsection{Ejemplo de codificación y decodificación}
+\begin{equation}
+    P_b^{\mathrm{FSK}} =
+    \frac{M}{2(M-1)}P_s^{\mathrm{FSK}}.
+    \label{eq:ber_fsk}
+\end{equation}
 
-A modo de ejemplo, se tomó la línea de texto \texttt{"May the Force be with you."}
-(26 caracteres) y se aplicaron las funciones de codificación y decodificación
-desarrolladas, obteniéndose:
+En la implementación de QAM se utiliza codificación
+Gray, de modo que los símbolos vecinos horizontal o
+verticalmente difieren en un único bit. Esta asignación
+reduce la cantidad de bits incorrectos cuando el ruido
+provoca una decisión hacia un símbolo vecino. Por lo
+tanto, permite disminuir la probabilidad de error de bit
+sin modificar la geometría de la constelación ni la
+probabilidad de error de símbolo.
 
-\begin{center}
-    \begin{tabular}{l p{0.75\textwidth}}
-        \toprule
-        Original     & \texttt{May the Force be with you.} \\
-        Codificada   & \texttt{\seqsplit{000001111111110100101100011101110001101010110001011010000100110001101011111000110010010110100011101011010010010111101100110}} \\
-        Decodificada & \texttt{May the Force be with you.} \\
-        \bottomrule
-    \end{tabular}
-\end{center}
+\subsection{Constelación de símbolos en el transmisor}
 
-La línea codificada utiliza 123 bits para sus 26 caracteres, es decir, \num{4.73} bits/símbolo en
-promedio, un valor cercano a la longitud media general del código (\num{4.6307} bits/símbolo). Dado que la
-frase de prueba no proviene del mismo conjunto con el que se creó el código, su longitud resulta
-levemente superior al promedio del texto completo
-Se verifica además que la línea decodificada coincide
-exactamente con la original, confirmando el correcto funcionamiento del codificador y el
-decodificador de fuente.
+Se seleccionó la modulación 16-QAM para analizar la
+constelación de símbolos generada en el transmisor.
 
-\subsubsection{Entropía, longitud del código y eficiencia}
+En este esquema, cada símbolo representa cuatro bits
+y se expresa mediante un vector bidimensional cuyas
+componentes corresponden a los ejes en fase (I) y en
+cuadratura (Q).
 
-El Cuadro~\ref{tab:resumen-entropia} resume los parámetros característicos del código
-obtenido para el texto de prueba utilizado (\texttt{shakespeare.txt}), comparados con la
-cota teórica de Shannon y con un código de longitud fija (código ASCII extendido de
-8 bits).
+La constelación está formada por 16 puntos distribuidos
+en una grilla de $4\times4$, con cuatro niveles de
+amplitud posibles en cada eje. La separación entre
+niveles se establece mediante el factor
 
-\begin{table}[htpb]
+\begin{equation}
+    d =
+    \sqrt{\frac{6\log_2(M)}{M-1}}.
+\end{equation}
+
+Para $M=16$, resulta
+
+\begin{equation}
+    d = \sqrt{\frac{24}{15}}
+      = \sqrt{\frac{8}{5}}.
+\end{equation}
+
+Los niveles de cada componente son
+
+\begin{equation}
+    \left\{
+        -\frac{3d}{2},
+        -\frac{d}{2},
+        \frac{d}{2},
+        \frac{3d}{2}
+    \right\}.
+\end{equation}
+
+En la Figura~\ref{fig:constelacion_16qam} se presenta
+la constelación ideal utilizada por el transmisor,
+incluyendo las etiquetas binarias asignadas a cada
+punto y sus regiones de decisión.
+
+\begin{figure}[htbp]
     \centering
-    \begin{tabular}{lSl}
-        \toprule
-        {Magnitud} & {Valor} & {Unidad} \\
-        \midrule
-        Entropía de la fuente, $H(\mathcal{S})$                   & 4.6046  & bits/símbolo \\
-        Longitud mínima (cota de Shannon), $L_{min}$              & 4.6046  & bits/símbolo \\
-        Longitud media del código, $\bar{L}$                      & 4.6307  & bits/símbolo \\
-        Varianza del código, $\sigma_L^2$                         & 3.4904  & (bits/símbolo)$^2$ \\
-        Eficiencia, $\eta = L_{min}/\bar{L}$                      & 99.44   & \unit{\percent} \\
-        Longitud de un código de longitud fija (ASCII extendido)  & 8       & bits/símbolo \\
-        \bottomrule
+    \includegraphics[width=0.6\textwidth]{../figuras/QAM.png}
+    \caption{Constelación ideal de la modulación 16-QAM
+    utilizada en el transmisor, con etiquetamiento Gray
+    y regiones de decisión.}
+    \label{fig:constelacion_16qam}
+\end{figure}
+
+La disposición de los símbolos permite transmitir
+cuatro bits por cada uso del canal. En ausencia de
+ruido y otras perturbaciones, cada vector transmitido
+coincide exactamente con uno de los puntos de la
+constelación.
+
+\subsection{Distribución de los símbolos modulados}
+
+Para estudiar la distribución de los símbolos
+transmitidos, se utilizó el texto de Shakespeare
+como fuente de información. El texto fue codificado
+mediante Huffman y la secuencia binaria resultante
+se agrupó en bloques de cuatro bits para realizar
+la modulación 16-QAM.
+
+El archivo contiene $5\,436\,475$ caracteres y la
+codificación de Huffman produjo $25\,174\,699$ bits.
+Se agregó un bit de relleno para completar el último
+bloque, obteniéndose un total de $6\,293\,675$
+símbolos modulados.
+
+La Figura~\ref{fig:histograma_16qam} muestra la
+cantidad de ocurrencias de cada símbolo, junto con
+una escala de probabilidad. La línea de referencia
+indica la frecuencia esperada bajo la hipótesis
+de equiprobabilidad.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{../figuras/hist_QAM_16.png}
+    \caption{Histograma de los símbolos transmitidos
+    mediante 16-QAM a partir del texto de Shakespeare
+    codificado con Huffman. La línea discontinua
+    representa la frecuencia esperada para símbolos
+    equiprobables.}
+    \label{fig:histograma_16qam.png}
+\end{figure}
+
+Si los símbolos fueran equiprobables, cada uno
+presentaría una probabilidad
+
+\begin{equation}
+    P(s_i)=\frac{1}{M}=\frac{1}{16}=0.0625.
+\end{equation}
+
+Sin embargo, los resultados experimentales muestran
+diferencias apreciables entre las frecuencias de
+ocurrencia. Por ejemplo, el símbolo \texttt{1111}
+presentó $502\,235$ ocurrencias, con una probabilidad
+estimada de $0.079800$, mientras que el símbolo
+\texttt{0100} presentó $290\,005$ ocurrencias, con
+una probabilidad estimada de $0.046079$.
+
+En consecuencia, \textbf{no resulta adecuado suponer
+que los símbolos transmitidos son equiprobables}
+para esta secuencia particular.
+
+Esta diferencia se debe a que la codificación de
+Huffman genera una secuencia binaria cuya distribución
+de bloques de cuatro bits no es necesariamente
+uniforme. Aunque Huffman reduce la redundancia de la
+fuente, no garantiza que todos los patrones binarios
+de longitud fija tengan igual probabilidad.
+
+\subsection{Energías medias de símbolo y de bit}
+
+La energía media teórica de la constelación 16-QAM
+se obtiene suponiendo que los 16 símbolos son
+equiprobables. Con la normalización implementada,
+resulta
+
+\begin{equation}
+    E_s^{\mathrm{teo}}=\log_2(16)=4,
+\end{equation}
+
+y, por lo tanto,
+
+\begin{equation}
+    E_b^{\mathrm{teo}}=
+    \frac{E_s^{\mathrm{teo}}}{4}=1.
+\end{equation}
+
+Para estimar estas energías a partir de la secuencia
+transmitida, se calculó la norma cuadrática de cada
+vector modulado y luego se promedió sobre los $N$
+símbolos generados:
+
+\begin{equation}
+    \widehat{E}_s =
+    \frac{1}{N}
+    \sum_{i=1}^{N}
+    \|\mathbf{s}_i\|^2.
+    \label{eq:energia_simbolo_estimada}
+\end{equation}
+
+La energía media estimada por bit se obtuvo como
+
+\begin{equation}
+    \widehat{E}_b =
+    \frac{\widehat{E}_s}{\log_2(M)}.
+    \label{eq:energia_bit_estimada}
+\end{equation}
+
+La Tabla~\ref{tab:energias_16qam} compara los
+resultados teóricos y estimados para la modulación
+seleccionada.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparación de energías medias teóricas
+    y estimadas para 16-QAM.}
+    \label{tab:energias_16qam}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Magnitud & Valor teórico & Valor estimado \\
+        \hline
+        Energía media por símbolo $E_s$ & 4.0000 & 3.7637 \\
+        \hline
+        Energía media por bit $E_b$ & 1.0000 & 0.9409 \\
+        \hline
     \end{tabular}
-    \caption{Entropía de la fuente, longitud mínima, longitud media, varianza y
-        eficiencia del código de Huffman obtenido para el texto de prueba, comparado con un
-        código de longitud fija.}
-    \label{tab:resumen-entropia}
 \end{table}
 
-Se observa que $L_{min} = H(\mathcal{S})$, dado que la cota de Shannon se calcula como
-$L_{min} = H(\mathcal{S})/\log_2 r$ y, al tratarse de un código binario, $r = 2$ y
-$\log_2 2 = 1$. Asimismo, la longitud media del código diseñado sobre este texto
-(\num{4.6307} bits/símbolo) resulta considerablemente menor que la longitud fija de
-8 bits/símbolo que requeriría el código ASCII extendido, evidenciando la ventaja
-de emplear un código de longitud variable adaptado a la estadística particular de la
-fuente.
+La energía media por símbolo estimada resultó
+aproximadamente un $5.91\,\%$ inferior al valor
+teórico calculado bajo equiprobabilidad.
 
-\subsubsection{Cantidad de bits necesarios para el texto completo}
+Esta diferencia es consistente con el histograma
+obtenido en el apartado anterior: la secuencia
+transmitida no utiliza todos los puntos de la
+constelación con la misma frecuencia.
 
-El Cuadro~\ref{tab:bits-totales} compara la cantidad total de bits necesarios para
-codificar el texto completo utilizado (\texttt{shakespeare.txt}, de
-\num{5436475} caracteres) empleando el código de Huffman diseñado, frente a la
-cantidad de bits que se necesitarían utilizando un código de longitud fija (ASCII
-extendido de 8 bits por caracter).
+En particular, los símbolos de 16-QAM presentan
+distintas energías según su posición en la
+constelación. Por lo tanto, una distribución no
+uniforme de sus probabilidades modifica el
+promedio de energía respecto del caso equiprobable.
 
-\begin{table}[htpb]
+Los resultados muestran que la normalización de
+la constelación garantiza $E_b=1$ bajo la hipótesis
+de símbolos equiprobables, pero no necesariamente
+para una secuencia de datos con distribución
+no uniforme.
+
+
+\section{Efectos del canal}
+
+En esta etapa se simularon los efectos introducidos por el canal
+de comunicaciones sobre los símbolos modulados. Se consideraron
+dos fenómenos: ruido blanco gaussiano aditivo (AWGN) y atenuación
+aleatoria de la señal.
+
+El modelo utilizado para representar el canal es
+
+\begin{equation}
+    \mathbf{r}_i = a_i \mathbf{s}_i + \mathbf{n}_i,
+    \label{eq:modelo_canal}
+\end{equation}
+
+donde $\mathbf{s}_i$ representa el símbolo transmitido,
+$a_i$ es el coeficiente de atenuación, $\mathbf{n}_i$
+es el vector de ruido y $\mathbf{r}_i$ es el símbolo recibido.
+
+\subsection{Generación de ruido AWGN}
+
+Se implementó una función que genera muestras aleatorias
+de ruido blanco gaussiano aditivo, con distribución normal
+de media nula y varianza $N_0/2$ por componente.
+
+Cada componente del vector de ruido satisface
+
+\begin{equation}
+    n_j \sim \mathcal{N}\left(0,\frac{N_0}{2}\right).
+\end{equation}
+
+Por lo tanto, el desvío estándar utilizado para generar
+las muestras es
+
+\begin{equation}
+    \sigma = \sqrt{\frac{N_0}{2}}.
+\end{equation}
+
+El ruido se genera de manera independiente para cada
+componente de los símbolos transmitidos y posteriormente
+se suma a la señal atenuada.
+
+\subsection{Atenuación aleatoria del canal}
+
+Para representar las variaciones de amplitud introducidas
+por el canal, se generaron coeficientes de atenuación
+aleatorios con distribución uniforme en el intervalo
+$[0.5,0.9]$:
+
+\begin{equation}
+    a_i \sim \mathcal{U}(0.5,0.9).
+\end{equation}
+
+Cada coeficiente multiplica las componentes del símbolo
+correspondiente, reduciendo su amplitud sin modificar
+su dirección en el espacio de señales.
+
+\subsection{Aplicación de los efectos del canal}
+
+La transmisión se simuló aplicando, para cada símbolo,
+un coeficiente de atenuación y sumando posteriormente
+un vector de ruido AWGN.
+
+De esta manera, el símbolo recibido se calcula como
+
+\begin{equation}
+    \mathbf{r}_i = a_i \mathbf{s}_i + \mathbf{n}_i.
+\end{equation}
+
+La atenuación modifica la amplitud de los símbolos,
+mientras que el ruido introduce desplazamientos
+aleatorios en sus componentes.
+
+La combinación de ambos efectos puede provocar que
+un símbolo recibido se ubique fuera de su región
+de decisión original y sea interpretado como otro
+símbolo durante la demodulación.
+
+\subsection{Constelación recibida para 16-QAM}
+
+Para analizar los efectos del canal se utilizó la
+modulación 16-QAM seleccionada en el apartado anterior.
+
+Se consideró una relación señal-ruido de
+
+\begin{equation}
+    \frac{E_b}{N_0} = 6\,\mathrm{dB}.
+\end{equation}
+
+En escala lineal, esta relación corresponde a
+
+\begin{equation}
+    \left(\frac{E_b}{N_0}\right)_{\mathrm{lin}}
+    = 10^{6/10} \approx 3.981.
+\end{equation}
+
+Considerando la energía nominal por bit $E_b=1$,
+se obtiene
+
+\begin{equation}
+    N_0 = \frac{1}{10^{6/10}} \approx 0.2512.
+\end{equation}
+
+En la Figura~\ref{fig:constelacion_canal_16qam}
+se presenta la constelación recibida luego de aplicar
+la atenuación y el ruido AWGN.
+
+\begin{figure}[htbp]
     \centering
-    \begin{tabular}{lS[table-format=8.0]}
-        \toprule
-        {Esquema de codificación} & {Bits totales} \\
-        \midrule
-        Código de Huffman diseñado                 & 25174699 \\
-        Código de longitud fija (ASCII, 8 bits)    & 43491800 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Cantidad total de bits necesarios para codificar el texto completo,
-        comparando el código de Huffman diseñado con un código de longitud fija.}
-    \label{tab:bits-totales}
-\end{table}
+    \includegraphics[width=0.8\textwidth]{../figuras/QAM_RUIDO.png}
+    \caption{Constelación 16-QAM recibida para
+    $E_b/N_0=6\,\mathrm{dB}$, considerando atenuación
+    uniforme entre 0.5 y 0.9 y ruido AWGN.
+    Los colores de las muestras identifican
+    los símbolos originalmente transmitidos.}
+    \label{fig:constelacion_canal_16qam}
+\end{figure}
 
-El uso del código de Huffman diseñado representa un ahorro de \qty{42.12}{\percent} en
-la cantidad de bits necesarios para transmitir el texto completo, respecto de utilizar
-un código de longitud fija de 8 bits por caracter.
+En el gráfico, cada símbolo transmitido se representa
+mediante un color diferente. Las cruces corresponden
+a las muestras recibidas, mientras que los puntos
+de la constelación ideal y sus etiquetas binarias
+permiten identificar las posiciones de referencia.
 
-% vim: ts=4 sts=4 sw=4 et lbr
+Esta representación permite distinguir las muestras
+asociadas a cada símbolo transmitido, incluso cuando
+el ruido y la atenuación las desplazan hacia otras
+regiones de decisión.
+
+Se observa que la atenuación produce una contracción
+de la constelación hacia el origen, mientras que
+el ruido AWGN genera una dispersión aleatoria
+alrededor de las posiciones atenuadas.
+
+Como consecuencia, algunas muestras pueden atravesar
+las fronteras de decisión correspondientes a otros
+símbolos, produciendo posibles errores de detección.
+
+La visualización mediante colores facilita el análisis
+de estos desplazamientos, ya que permite reconocer
+el símbolo de origen independientemente de la región
+en la que finalmente se encuentra la muestra recibida.
+

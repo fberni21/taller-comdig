@@ -113,7 +113,12 @@ def main():
             modulator.mapping, modulated,
             f'hist_{args.mod_scheme}_{args.mod_order}.png')
 
-    channel = Channel(N0=0.25)
+
+    Eb_N0_dB = 6
+    Eb = 1.0
+    Eb_N0 = 10 ** (Eb_N0_dB / 10)
+    N0 = Eb / Eb_N0
+    channel = Channel(N0=N0, seed=42)
     symbols_noisy = channel.transmit(modulated)
 
     demodulator = Demodulator(modulator.mapping)
@@ -126,17 +131,28 @@ def main():
     print(f'Symbol error rate (Pe) : {Pe:.6f}')
     print(f'Bit error rate (Pb)    : {Pb:.6f}')
 
+    
     if args.plot_constellation:
         plot_constellation(modulator.mapping)
 
-        samples = np.random.choice(range(symbols_noisy.shape[0]),
-                                   1000, replace=False)
-        plot_constellation(modulator.mapping, symbols_noisy[samples])
+        samples = np.random.choice(
+            symbols_noisy.shape[0],
+            min(1000, symbols_noisy.shape[0]),
+            replace=False
+        )
+
+        plot_constellation(
+            modulator.mapping,
+            symbols_noisy[samples],
+            modulated[samples]
+        )
+
+
 
     return 0
 
 
-def plot_constellation(mapping, samples=None):
+def plot_constellation(mapping, samples=None, transmitted = None):
     symbols = np.array(list(mapping.values()))
 
     if symbols.shape[1] != 2:
@@ -162,18 +178,45 @@ def plot_constellation(mapping, samples=None):
     plt.contour(xx, yy, Z, linestyle='--', colors='black', levels=len(mapping))
 
     if samples is not None:
-        plt.scatter(samples[:, 0], samples[:, 1],
-                    alpha=0.5, marker='x',
-                    label='Recibidos')
+        if transmitted is not None:
+            for i, (label, symbol) in enumerate(mapping.items()):
+                mask = np.all(transmitted == symbol, axis=1)
 
+                plt.scatter(
+                    samples[mask, 0],
+                    samples[mask, 1],
+                    color=plt.get_cmap('tab20')(i),
+                    alpha=0.6,
+                    marker='x',
+                    label=label
+                )
+        else:
+            plt.scatter(
+                samples[:, 0],
+                samples[:, 1],
+                alpha=0.5,
+                marker='x',
+                label='Recibidos'
+            )
+                    
     plt.scatter(symbols[:, 0], symbols[:, 1],
                 c=list(int(k, 2) for k in mapping), cmap=cmap,
                 edgecolors='black', label='Símbolos')
-
+    
     for label, symbol in mapping.items():
         plt.text(symbol[0] + 0.02*x_len, symbol[1] + 0.02*y_len, repr(label))
 
-    plt.legend()
+    if transmitted is not None:
+        plt.legend(title='Símbolo transmitido',
+                   bbox_to_anchor=(1.02, 1),
+                   loc='upper left', fontsize=8)
+    else:
+        plt.legend()
+
+    plt.xlabel('Componente en fase (I)')
+    plt.ylabel('Componente en cuadratura (Q)')
+    plt.axis('equal')
+    plt.tight_layout()
     plt.show()
 
 def plot_symbol_histogram(mapping, symbols, filename=None):
