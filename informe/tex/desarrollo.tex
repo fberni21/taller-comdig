@@ -202,7 +202,9 @@ El uso del código de Huffman diseñado representa un ahorro de \qty{42.12}{\per
 la cantidad de bits necesarios para transmitir el texto completo, respecto de utilizar
 un código de longitud fija de 8 bits por caracter.
 
-\subsection{Caracterización de las modulaciones}
+\subsection{Modulación y demodulación en banda banda pasante}
+
+\subsubsection{Caracterización de las modulaciones}
 
 Se implementaron esquemas de modulación M-FSK, para
 $M \in \{2,4,8,16\}$, y M-QAM cuadrada, para
@@ -211,14 +213,11 @@ $k=\log_2(M)$ bits de información.
 
 La energía de un símbolo se calcula a partir de sus componentes
 en una base ortonormal:
-
 \begin{equation}
     E(s_i)=\|\mathbf{s}_i\|^2.
 \end{equation}
-
 La energía media por símbolo y la energía media por bit se
 definen como
-
 \begin{equation}
     \overline{E}_s =
     \sum_{i=1}^{M} P(s_i)\|\mathbf{s}_i\|^2,
@@ -316,7 +315,7 @@ tanto, permite disminuir la probabilidad de error de bit
 sin modificar la geometría de la constelación ni la
 probabilidad de error de símbolo.
 
-\subsection{Constelación de símbolos en el transmisor}
+\subsubsection{Constelación de símbolos en el transmisor}
 
 Se seleccionó la modulación 16-QAM para analizar la
 constelación de símbolos generada en el transmisor.
@@ -340,7 +339,6 @@ Para $M=16$, resulta
     d = \sqrt{\frac{24}{15}}
       = \sqrt{\frac{8}{5}}.
 \end{equation}
-
 Los niveles de cada componente son
 \begin{equation}
     \left\{
@@ -371,7 +369,7 @@ ruido y otras perturbaciones, cada vector transmitido
 coincide exactamente con uno de los puntos de la
 constelación.
 
-\subsection{Distribución de los símbolos modulados}
+\subsubsection{Distribución de los símbolos modulados}
 
 Para estudiar la distribución de los símbolos
 transmitidos, se utilizó el texto de Shakespeare
@@ -408,7 +406,6 @@ presentaría una probabilidad
 \begin{equation}
     P(s_i)=\frac{1}{M}=\frac{1}{16}=0.0625.
 \end{equation}
-
 Sin embargo, los resultados experimentales muestran
 diferencias apreciables entre las frecuencias de
 ocurrencia. Por ejemplo, el símbolo \texttt{1111}
@@ -417,10 +414,9 @@ estimada de $0.079800$, mientras que el símbolo
 \texttt{0100} presentó \num{290005} ocurrencias, con
 una probabilidad estimada de $0.046079$.
 
-En consecuencia, \textbf{no resulta adecuado suponer
-que los símbolos transmitidos son equiprobables}
+En consecuencia, no resulta adecuado suponer
+que los símbolos transmitidos son equiprobables
 para esta secuencia particular.
-
 Esta diferencia se debe a que la codificación de
 Huffman genera una secuencia binaria cuya distribución
 de bloques de cuatro bits no es necesariamente
@@ -428,7 +424,7 @@ uniforme. Aunque Huffman reduce la redundancia de la
 fuente, no garantiza que todos los patrones binarios
 de longitud fija tengan igual probabilidad.
 
-\subsection{Energías medias de símbolo y de bit}
+\subsubsection{Energías medias de símbolo y de bit}
 
 La energía media teórica de la constelación 16-QAM
 se obtiene suponiendo que los 16 símbolos son
@@ -453,14 +449,11 @@ símbolos generados:
     \sum_{i=1}^{N}
     \|\mathbf{s}_i\|^2.
 \end{equation}
-
 La energía media estimada por bit se obtuvo como
-
 \begin{equation}
     \widehat{E}_b =
     \frac{\widehat{E}_s}{\log_2(M)}.
 \end{equation}
-
 La Tabla~\ref{tab:energias_16qam} compara los
 resultados teóricos y estimados para la modulación
 seleccionada.
@@ -482,7 +475,6 @@ seleccionada.
 La energía media por símbolo estimada resultó
 aproximadamente un \qty{5.91}{\percent} inferior al valor
 teórico calculado bajo equiprobabilidad.
-
 Esta diferencia es consistente con el histograma
 obtenido en el apartado anterior: la secuencia
 transmitida no utiliza todos los puntos de la
@@ -493,7 +485,6 @@ distintas energías según su posición en la
 constelación. Por lo tanto, una distribución no
 uniforme de sus probabilidades modifica el
 promedio de energía respecto del caso equiprobable.
-
 Los resultados muestran que la normalización de
 la constelación garantiza $E_b=1$ bajo la hipótesis
 de símbolos equiprobables, pero no necesariamente
@@ -501,12 +492,11 @@ para una secuencia de datos con distribución
 no uniforme.
 
 
-\section{Efectos del canal}
+\subsection{Efectos del canal}
 
 En esta etapa se simularon los efectos introducidos por el canal
 de comunicaciones sobre los símbolos modulados. Se consideró
 el fenómeno de ruido blanco gaussiano aditivo (AWGN).
-
 El modelo utilizado para representar el canal es
 \begin{equation}
     \mathbf{r}_i = \mathbf{s}_i + \mathbf{n}_i,
@@ -514,12 +504,11 @@ El modelo utilizado para representar el canal es
 donde $\mathbf{s}_i$ representa el símbolo transmitido,
 $\mathbf{n}_i$ es el vector de ruido y $\mathbf{r}_i$ es el símbolo recibido.
 
-\subsection{Generación de ruido AWGN}
+\subsubsection{Generación de ruido AWGN}
 
 Se implementó una función que genera muestras aleatorias
 de ruido blanco gaussiano aditivo, con distribución normal
 de media nula y varianza $N_0/2$ por componente.
-
 Cada componente del vector de ruido satisface
 \begin{equation}
     n_j \sim \mathcal{N}\left(0,\frac{N_0}{2}\right).
@@ -529,16 +518,14 @@ las muestras es
 \begin{equation}
     \sigma = \sqrt{\frac{N_0}{2}}.
 \end{equation}
-
 El ruido se genera de manera independiente para cada
 componente de los símbolos transmitidos y posteriormente
 se suma a la señal.
 
-\subsection{Constelación recibida para 16-QAM}
+\subsubsection{Constelación recibida para 16-QAM}
 
 Para analizar los efectos del canal se utilizó la
 modulación 16-QAM seleccionada en el apartado anterior.
-
 Se consideró una relación señal-ruido de
 \begin{equation}
     \frac{E_b}{N_0} = \qty{6}{\dB}.
@@ -548,7 +535,6 @@ En escala lineal, esta relación corresponde a
     \left(\frac{E_b}{N_0}\right)_{\mathrm{lin}}
     = 10^{6/10} \approx 3.981.
 \end{equation}
-
 Considerando la energía nominal por bit $E_b=1$,
 se obtiene
 \begin{equation}
@@ -573,18 +559,15 @@ En el gráfico, cada símbolo transmitido se representa
 mediante un color diferente. Las cruces corresponden
 a las muestras recibidas, mientras que los puntos
 de la constelación ideal.
-
 Esta representación permite distinguir las muestras
 asociadas a cada símbolo transmitido, incluso cuando
-el ruido y la atenuación las desplazan hacia otras
-regiones de decisión.
+el ruido las desplaza hacia otras regiones de decisión.
 
 El ruido AWGN genera una dispersión aleatoria
-alrededor de las posiciones atenuadas.
+alrededor de las posiciones de los símbolos perfectos.
 Como consecuencia, algunas muestras pueden atravesar
 las fronteras de decisión correspondientes a otros
 símbolos, produciendo posibles errores de detección.
-
 La visualización mediante colores facilita el análisis
 de estos desplazamientos, ya que permite reconocer
 el símbolo de origen independientemente de la región
