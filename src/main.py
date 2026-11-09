@@ -1,5 +1,4 @@
 import argparse
-from fileinput import filename
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +8,8 @@ import source
 from modulator import FskModulator, QamModulator
 from demodulator import Demodulator
 
-from utils import compute_char_probs, compute_entropy, is_prefix_code, compute_symbol_error_rate, compute_bit_error_rate
+from utils import compute_char_probs, compute_entropy, is_prefix_code, \
+    compute_symbol_error_rate, compute_bit_error_rate
 
 
 def main():
@@ -113,7 +113,6 @@ def main():
             modulator.mapping, modulated,
             f'hist_{args.mod_scheme}_{args.mod_order}.png')
 
-
     Eb_N0_dB = 6
     Eb = 1.0
     Eb_N0 = 10 ** (Eb_N0_dB / 10)
@@ -131,7 +130,6 @@ def main():
     print(f'Symbol error rate (Pe) : {Pe:.6f}')
     print(f'Bit error rate (Pb)    : {Pb:.6f}')
 
-    
     if args.plot_constellation:
         plot_constellation(modulator.mapping)
 
@@ -147,12 +145,10 @@ def main():
             modulated[samples]
         )
 
-
-
     return 0
 
 
-def plot_constellation(mapping, samples=None, transmitted = None):
+def plot_constellation(mapping, samples=None, transmitted=None):
     symbols = np.array(list(mapping.values()))
 
     if symbols.shape[1] != 2:
@@ -162,9 +158,15 @@ def plot_constellation(mapping, samples=None, transmitted = None):
     y_min, y_max = np.min(symbols[:, 1]), np.max(symbols[:, 1])
     x_len = x_max - x_min
     y_len = y_max - y_min
-    xx, yy = np.meshgrid(
-            np.linspace(x_min - 0.2*x_len, x_max + 0.2*x_len, 200),
-            np.linspace(y_min - 0.2*y_len, y_max + 0.2*y_len, 200))
+
+    x_start = x_min - 0.2*x_len
+    x_end = x_max + 0.2*x_len
+
+    y_start = y_min - 0.2*y_len
+    y_end = y_max + 0.2*y_len
+
+    xx, yy = np.meshgrid(np.linspace(x_start, x_end, 200),
+                         np.linspace(y_start, y_end, 200))
 
     # Extraer esta lógica a una función porque va a servir para
     # la demodulación también
@@ -179,16 +181,15 @@ def plot_constellation(mapping, samples=None, transmitted = None):
 
     if samples is not None:
         if transmitted is not None:
-            for i, (label, symbol) in enumerate(mapping.items()):
+            for label, symbol in mapping.items():
                 mask = np.all(transmitted == symbol, axis=1)
 
                 plt.scatter(
                     samples[mask, 0],
                     samples[mask, 1],
-                    color=plt.get_cmap('tab20')(i),
+                    color=plt.get_cmap(cmap)(int(label, 2)),
                     alpha=0.6,
                     marker='x',
-                    label=label
                 )
         else:
             plt.scatter(
@@ -198,11 +199,11 @@ def plot_constellation(mapping, samples=None, transmitted = None):
                 marker='x',
                 label='Recibidos'
             )
-                    
+
     plt.scatter(symbols[:, 0], symbols[:, 1],
                 c=list(int(k, 2) for k in mapping), cmap=cmap,
                 edgecolors='black', label='Símbolos')
-    
+
     for label, symbol in mapping.items():
         plt.text(symbol[0] + 0.02*x_len, symbol[1] + 0.02*y_len, repr(label))
 
@@ -213,11 +214,12 @@ def plot_constellation(mapping, samples=None, transmitted = None):
     else:
         plt.legend()
 
-    plt.xlabel('Componente en fase (I)')
-    plt.ylabel('Componente en cuadratura (Q)')
-    plt.axis('equal')
+    plt.xlim(x_start, x_end)
+    plt.ylim(y_start, y_end)
+    plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 def plot_symbol_histogram(mapping, symbols, filename=None):
     # Cuenta cuántas veces aparece cada símbolo de la constelación en
