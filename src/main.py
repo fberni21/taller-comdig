@@ -7,9 +7,24 @@ from channel import Channel
 import source
 from modulator import FskModulator, QamModulator
 from demodulator import Demodulator
+from channel_encoder import ChannelEncoder
 
 from utils import compute_char_probs, compute_entropy, is_prefix_code, \
     compute_symbol_error_rate, compute_bit_error_rate
+
+
+G = np.array(
+        [[1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+         [1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+         [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+         [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+         [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+         [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]])
 
 
 def main():
@@ -80,33 +95,31 @@ def main():
         print()
 
     encoded = source_enc.encode(chars)
-    decoded = source_dec.decode(encoded)
     encoded_length = len(encoded)
     ascii_length = chars_count * 8
     compression_savings = 1 - encoded_length / ascii_length
-
-    with open(args.output, 'w') as f:
-        f.write(decoded)
 
     print('=' * 72)
     print(f'Character count       : {chars_count} symbols')
     print(f'Bits needed (Huffman) : {len(encoded)} bits')
     print(f'Bits needed (ASCII)   : {chars_count * 8} bits')
     print(f'Compression savings   : {100 * compression_savings:.2f} %')
-    print(f'Output equal?         : {text == decoded}')
+
+    channel_enc = ChannelEncoder(G)
+    encoded, channel_enc_pad = channel_enc.encode(encoded)
 
     if args.mod_scheme == 'FSK':
         modulator = FskModulator(order=args.mod_order)
     elif args.mod_scheme == 'QAM':
         modulator = QamModulator(order=args.mod_order)
 
-    modulated, pad = modulator.modulate(encoded)
+    modulated, mod_pad = modulator.modulate(encoded)
 
     print('=' * 72)
     mean_energies = modulator.compute_mean_energies(modulated)
     print(f'Mean energy per symbol : {mean_energies[0]:.4f} J/symbol')
     print(f'Mean energy per bit    : {mean_energies[1]:.4f} J/bit')
-    print(f'Padding bits           : {pad}')
+    print(f'Padding bits           : {mod_pad + channel_enc_pad}')
 
     if args.plot_histogram:
         plot_symbol_histogram(
@@ -118,11 +131,15 @@ def main():
     Eb_N0 = 10 ** (Eb_N0_dB / 10)
     N0 = Eb / Eb_N0
     channel = Channel(N0=N0, seed=42)
-    symbols_noisy = channel.transmit(modulated)
+    syms_noisy = channel.transmit(modulated)
 
     demodulator = Demodulator(modulator.mapping)
-    demodulated, points_decided = demodulator.demodulate(symbols_noisy, pad)
+    demodulated, points_decided = demodulator.demodulate(syms_noisy, mod_pad)
 
+    # FIXME: super importante chequear si esto hay que calcularlo acá
+    # (que sería calcular error de símbolo/bit por el ruido del canal)
+    # o después de la detección de errores (que mejoraría este número).
+    # Probablemente haya que calcular ambos casos?
     Pe = compute_symbol_error_rate(modulated, points_decided)
     Pb = compute_bit_error_rate(encoded, demodulated)
 
@@ -134,16 +151,25 @@ def main():
         plot_constellation(modulator.mapping)
 
         samples = np.random.choice(
-            symbols_noisy.shape[0],
-            min(1000, symbols_noisy.shape[0]),
+            syms_noisy.shape[0],
+            min(1000, syms_noisy.shape[0]),
             replace=False
         )
 
         plot_constellation(
             modulator.mapping,
-            symbols_noisy[samples],
+            syms_noisy[samples],
             modulated[samples]
         )
+
+    # COMPLETAR
+    # channel_dec = ChannelDecoder(...)
+    # decoded = channel_dec.decode(demodulated)
+    decoded = source_dec.decode(decoded)
+    with open(args.output, 'w') as f:
+        f.write(decoded)
+
+    print(f'Output equal?          : {text == decoded}')
 
     return 0
 
