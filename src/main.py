@@ -8,6 +8,7 @@ import source
 from modulator import FskModulator, QamModulator
 from demodulator import Demodulator
 from channel_encoder import ChannelEncoder
+from channel_decoder import ChannelDecoder
 
 from utils import compute_char_probs, compute_entropy, is_prefix_code, \
     compute_symbol_error_rate, compute_bit_error_rate
@@ -163,8 +164,12 @@ def main():
         )
 
     # COMPLETAR
-    # channel_dec = ChannelDecoder(...)
-    # decoded = channel_dec.decode(demodulated)
+    channel_dec = ChannelDecoder(G)
+
+    H = channel_dec.parity_check
+    S = channel_dec.syndrome_table
+
+    decoded = channel_dec.decode(H, S, demodulated, channel_enc_pad)
     decoded = source_dec.decode(decoded)
     with open(args.output, 'w') as f:
         f.write(decoded)
