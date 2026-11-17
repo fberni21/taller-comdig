@@ -39,6 +39,11 @@ def main():
                         help='sample line to encode and decode')
     parser.add_argument('--output', default='decoded.txt',
                         help='decoded file name (default: decoded.txt)')
+    parser.add_argument('--eb-n0', default=6.0, type=float,
+                        help='channel noise Eb/N0 relation in dB')
+    parser.add_argument('--channel-encode',
+                        action=argparse.BooleanOptionalAction,
+                        help='use channel encoding')
     parser.add_argument('--plot-constellation',
                         action=argparse.BooleanOptionalAction,
                         help='plot constellation (only for 2D constellations)')
@@ -77,16 +82,15 @@ def main():
         print(f'{chr(k)!r}\t{count}\t{p:.8f}\t{huff.code_map[k]}')
     print()
 
-    source_enc = source.SourceEncoder(huff.code_map)
-    source_dec = source.SourceDecoder(huff.code_map)
-
-    print('=' * 72)
+    source_encoder = source.SourceEncoder(huff.code_map)
+    source_decoder = source.SourceDecoder(huff.code_map)
 
     sample = args.sample
     if sample is not None:
+        print('=' * 72)
         sample_chars = [ord(c) for c in sample]
-        sample_encoded = source_enc.encode(sample_chars)
-        sample_decoded = source_dec.decode(sample_encoded)
+        sample_encoded = source_encoder.encode(sample_chars)
+        sample_decoded = source_decoder.decode(sample_encoded)
         print(f'Sample         : {sample!r}')
         print(f'Encoded sample : {sample_encoded}')
         print(f'Decoded sample : {sample_decoded!r}')
@@ -95,29 +99,37 @@ def main():
         print(f'Output equal?  : {sample == sample_decoded}')
         print()
 
-    encoded = source_enc.encode(chars)
-    encoded_length = len(encoded)
+    source_encoded = source_encoder.encode(chars)
+    encoded_length = len(source_encoded)
     ascii_length = chars_count * 8
     compression_savings = 1 - encoded_length / ascii_length
 
     print('=' * 72)
     print(f'Character count       : {chars_count} symbols')
-    print(f'Bits needed (Huffman) : {len(encoded)} bits')
+    print(f'Bits needed (Huffman) : {len(source_encoded)} bits')
     print(f'Bits needed (ASCII)   : {chars_count * 8} bits')
     print(f'Compression savings   : {100 * compression_savings:.2f} %')
 
-    channel_enc = ChannelEncoder(G)
-    encoded, channel_enc_pad = channel_enc.encode(encoded)
+    if args.channel_encode:
+        channel_encoder = ChannelEncoder(G)
+        channel_encoded, channel_enc_pad =\
+            channel_encoder.encode(source_encoded)
+        code_rate = channel_encoder.input_bits / channel_encoder.output_bits
+    else:
+        channel_encoded, channel_enc_pad = source_encoded, 0
+        code_rate = 1
 
     if args.mod_scheme == 'FSK':
-        modulator = FskModulator(order=args.mod_order)
+        modulator = FskModulator(order=args.mod_order, code_rate=code_rate)
     elif args.mod_scheme == 'QAM':
-        modulator = QamModulator(order=args.mod_order)
+        modulator = QamModulator(order=args.mod_order, code_rate=code_rate)
 
-    modulated, mod_pad = modulator.modulate(encoded)
+    modulated, mod_pad = modulator.modulate(channel_encoded)
+
+    mean_energies = modulator.compute_mean_energies(
+            modulated, code_rate=code_rate)
 
     print('=' * 72)
-    mean_energies = modulator.compute_mean_energies(modulated)
     print(f'Mean energy per symbol : {mean_energies[0]:.4f} J/symbol')
     print(f'Mean energy per bit    : {mean_energies[1]:.4f} J/bit')
     print(f'Padding bits           : {mod_pad + channel_enc_pad}')
@@ -127,7 +139,7 @@ def main():
             modulator.mapping, modulated,
             f'hist_{args.mod_scheme}_{args.mod_order}.png')
 
-    Eb_N0_dB = 6
+    Eb_N0_dB = args.eb_n0
     Eb = 1.0
     Eb_N0 = 10 ** (Eb_N0_dB / 10)
     N0 = Eb / Eb_N0
@@ -137,12 +149,8 @@ def main():
     demodulator = Demodulator(modulator.mapping)
     demodulated, points_decided = demodulator.demodulate(syms_noisy, mod_pad)
 
-    # FIXME: super importante chequear si esto hay que calcularlo acá
-    # (que sería calcular error de símbolo/bit por el ruido del canal)
-    # o después de la detección de errores (que mejoraría este número).
-    # Probablemente haya que calcular ambos casos?
     Pe = compute_symbol_error_rate(modulated, points_decided)
-    Pb = compute_bit_error_rate(encoded, demodulated)
+    Pb = compute_bit_error_rate(channel_encoded, demodulated)
 
     print('=' * 72)
     print(f'Symbol error rate (Pe) : {Pe:.6f}')
@@ -163,14 +171,30 @@ def main():
             modulated[samples]
         )
 
-    # COMPLETAR
-    channel_dec = ChannelDecoder(G)
+    if args.channel_encode:
+        channel_dec = ChannelDecoder(G)
 
-    H = channel_dec.parity_check
-    S = channel_dec.syndrome_table
+        H = channel_dec.parity_check
+        S = channel_dec.syndrome_table
 
-    decoded = channel_dec.decode(H, S, demodulated, channel_enc_pad)
-    decoded = source_dec.decode(decoded)
+        dmin, e, t = channel_dec.code_parameters(G)
+
+        print('=' * 72)
+        print(f"Minimum code distance       : {dmin}")
+        print(f"Maximum detectable errors   : {e}")
+        print(f"Maximum correctable errors  : {t}")
+
+        decoded = channel_dec.decode(H, S, demodulated, channel_enc_pad)
+    else:
+        decoded = demodulated
+
+    corrected_Pb = compute_bit_error_rate(source_encoded, decoded)
+
+    print('=' * 72)
+    print(f'Bit error rate after correction (Pb)    : {corrected_Pb:.6f}')
+
+    decoded, error = source_decoder.decode(decoded)
+
     with open(args.output, 'w') as f:
         f.write(decoded)
 
@@ -208,7 +232,8 @@ def plot_constellation(mapping, samples=None, transmitted=None):
     cmap = 'tab20'
     plt.figure(figsize=(6, 6))
     plt.pcolormesh(xx, yy, Z, alpha=0.2, cmap=cmap)
-    plt.contour(xx, yy, Z, linestyle='--', colors='black', levels=len(mapping))
+    plt.contour(xx, yy, Z, linestyles='--',
+                colors='black', levels=len(mapping))
 
     if samples is not None:
         if transmitted is not None:

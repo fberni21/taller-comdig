@@ -93,12 +93,18 @@ class SourceDecoder:
         length = len(encoded)
         decoded = []
         start = 0
+        error = False
         while start < length:
+            found = False
             for code_length in self.lengths:
                 end = start + code_length
                 code_word = encoded[start:end]
                 if code_word in self.decode_map:
                     decoded.append(self.decode_map[code_word])
                     start = end
+                    found = True
                     break
-        return ''.join(decoded)
+            if not found:
+                error = True
+                start += 1
+        return ''.join(decoded), error

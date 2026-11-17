@@ -28,10 +28,10 @@ class ChannelDecoder:
         if not np.array_equal(G[:, r:], np.eye(k, dtype=int)):
             raise ValueError("La matriz G debe tener la forma [P | I_k].")
 
-        I = np.eye(r, dtype=int)
+        Id = np.eye(r, dtype=int)
 
         # H = [I_(n-k) | P.T]
-        H = np.concatenate((I, P.T), axis=1) % 2
+        H = np.concatenate((Id, P.T), axis=1) % 2
 
         if not np.all((G @ H.T) % 2 == 0):
             raise ValueError("La matriz H calculada no es valida.")
@@ -64,18 +64,8 @@ class ChannelDecoder:
 
     # Inciso 3: detectar y corregir una palabra recibida
     def _decode_word(self, H, S, word):
-        H = np.asarray(H, dtype=int)
-        word = np.asarray(word, dtype=int)
-
-        if len(word) != H.shape[1]:
-            raise ValueError("La palabra recibida debe tener n bits.")
-
         # Calcular el sindrome de la palabra recibida
         syndrome = tuple((H @ word) % 2)
-
-        # Buscar el patron de error en la tabla
-        if syndrome not in S:
-            raise ValueError("El sindrome no se encuentra en la tabla.")
 
         error = S[syndrome]
 
@@ -96,23 +86,20 @@ class ChannelDecoder:
                 "La longitud recibida debe ser multiplo de n."
             )
 
-        if any(bit not in "01" for bit in bits):
-            raise ValueError("La secuencia debe contener solo 0 y 1.")
-
         num_symbols = len(bits) // n
         decoded = np.zeros(num_symbols * k, dtype=int)
 
         input_start = 0
         output_start = 0
 
+        bits = [int(bit) for bit in bits]
+
         for i in range(num_symbols):
             input_end = input_start + n
             output_end = output_start + k
 
             # Tomar una palabra de n bits
-            word = [
-                int(bit) for bit in bits[input_start:input_end]
-            ]
+            word = bits[input_start:input_end]
 
             # Detectar y corregir utilizando el inciso 3
             corrected = self._decode_word(H, S, word)
