@@ -211,90 +211,72 @@ cuando sea posible, corregir errores producidos durante la transmisión.
 
 En este trabajo se implementó un código lineal de bloques binario $(n,k)$, que transforma cada mensaje de $k$ bits en una palabra
 codificada de $n$ bits, con $n>k$. Los $n-k$ bits adicionales incorporan redundancia para la protección de la información.
-
 La codificación se realiza mediante una matriz generadora
 $G\in\mathbb{F}_2^{k\times n}$, según
-
 \begin{equation}
-    \mathbf{U}=\mathbf{m}G, 
-    \label{eq:codificacion_canal}
+    \mathbf{u}=\mathbf{m}G,
 \end{equation}
-
 donde $\mathbf{m}$ representa el mensaje de $k$ bits y
-$\mathbf{U}$ la palabra codificada de $n$ bits.
+$\mathbf{u}$ la palabra codificada de $n$ bits.
 
 Se utiliza un código sistemático, cuya matriz generadora
 presenta la forma
-
 \begin{equation}
     G=
     \begin{bmatrix}
         P & I_k
     \end{bmatrix},
 \end{equation}
-
 donde $P$ es una matriz de dimensión $k\times(n-k)$
 e $I_k$ es la matriz identidad de orden $k$.
-
 Esta estructura permite conservar los bits originales del
 mensaje en las últimas $k$ posiciones de cada palabra codificada y es por ello que es un codigo lineal de bloques
 sistemático.
 
 En el receptor se utiliza una matriz de chequeo de paridad
-$H\in\mathbb{F}^{(n-k)\times n}$, que satisface
-
+$H\in\mathbb{F}_2^{(n-k)\times n}$, que satisface
 \begin{equation}
     GH^T=0
 \end{equation}
-
 A partir de una palabra recibida $\mathbf{r}$ se calcula
 su síndrome:
-
 \begin{equation}
-    \mathbf{s}=r\mathbf{H}^T .
+    \mathbf{s}=\mathbf{r} H^T .
     \label{eq:sindrome_canal}
 \end{equation}
-
 Si el síndrome es distinto de cero, se detecta que la palabra
 recibida no pertenece al código es decir que, hay error.
 
 Para realizar la corrección se construye una tabla de síndromes,
 que relaciona cada síndrome posible con un patrón de error.
-
 El receptor busca el síndrome calculado en dicha tabla y
 obtiene un patrón de error estimado $\hat{\mathbf{e}}$.
 La palabra corregida se calcula como
-
 \begin{equation}
-    \hat{\mathbf{U}}=
+    \hat{\mathbf{u}}=
     \mathbf{r}+\hat{\mathbf{e}}.
-    \label{eq:correccion_canal}
 \end{equation}
-
 Finalmente, al tratarse de un código sistemático, se recuperan
 los últimos $k$ bits de la palabra corregida para obtener
 una estimación del mensaje original.
 
 La corrección no garantiza la recuperación de todos los patrones de error, ya que
-distintos errores pueden producir un mismo síndrome y un error puede provocar una palabra del codigo correcta
-por ende no sería detectable. 
+distintos errores pueden producir un mismo síndrome y un error puede provocar una palabra del código correcta,
+por ende no sería detectable.
 
 \subsubsection{Parámetros y matriz generadora}
 
 Para el código lineal de bloques utilizado se adoptaron
-los siguientes parámetros:
-
+los siguientes parámetros provistos por la cátedra:
 \begin{equation}
     k=11,\qquad n=15.
 \end{equation}
-
 Por lo tanto, cada mensaje de 11 bits se transforma en una
 palabra codificada de 15 bits, incorporando cuatro bits
 de redundancia.
 
 La matriz generadora utilizada tiene la estructura
 $G=[P\mid I_{11x11}]$, donde
-
 \begin{equation}
 P=
 \left[
@@ -312,30 +294,23 @@ P=
 0&0&0&1
 \end{array}
 \right].
-\label{eq:matriz_P_canal}
 \end{equation}
-
 De esta manera, la matriz generadora completa queda
 determinada por
-
 \begin{equation}
-    G=\left[P\mid I_{11x11}\right].
-    \label{eq:matriz_G_canal}
+    G=\left[P\mid I_{11 \times 11}\right].
 \end{equation}
 
 La tasa de código se define como la relación entre
 los bits de información y los bits transmitidos:
-
 \begin{equation}
     R_c=\frac{k}{n}
     =\frac{11}{15}
     \approx 0.7333.
-    \label{eq:tasa_codigo_canal}
 \end{equation}
-
-Esto significa que aproximadamente el 73.33\% de los bits
+Esto significa que aproximadamente el \qty{73.33}{\percent} de los bits
 transmitidos corresponden a información original, mientras
-que el 26.67\% restante constituye redundancia introducida
+que el \qty{26.67}{\percent} restante constituye redundancia introducida
 por la codificación de canal.
 
 
@@ -344,15 +319,12 @@ por la codificación de canal.
 Dado que la matriz generadora es sistemática y presenta
 la forma $G=[P\mid I_k]$, la matriz de chequeo de paridad
 se construye como
-
 \begin{equation}
     H=\left[I_{n-k}\mid P^T\right].
-    \label{eq:construccion_H_canal}
 \end{equation}
 
 Para los parámetros adoptados, la matriz $H$ tiene
 dimensiones $4\times15$ y resulta
-
 \begin{equation}
 H=
 \left[
@@ -363,9 +335,7 @@ H=
 0&0&0&1&1&1&1&1&0&0&0&0&0&0&1
 \end{array}
 \right].
-\label{eq:matriz_H_canal}
 \end{equation}
-
 La matriz obtenida satisface la condición de
 ortogonalidad $GH^T=0$.
 
@@ -375,56 +345,54 @@ ortogonalidad $GH^T=0$.
 La distancia mínima de un código lineal se define
 como la menor distancia de Hamming entre dos palabras
 de código distintas.
-
 Debido a la linealidad del código, esta distancia
 coincide con el menor peso de Hamming entre todas
 las palabras de código no nulas:
-
 \begin{equation}
     d_{\min}=
-    \min_{\mathbf{U}\neq\mathbf{0}}w_H(\mathbf{U}).
+    \min_{\mathbf{u}\neq\mathbf{0}}w_H(\mathbf{u}).
 \end{equation}
 
 Para determinarla se generaron exhaustivamente los
 $2^{11}-1=2047$ mensajes no nulos posibles, se
 codificaron mediante la matriz $G$ y se calculó
 el peso de Hamming de cada palabra obtenida.
-
 El menor peso encontrado fue
-
 \begin{equation}
     \boxed{d_{\min}=2}.
 \end{equation}
 
 La cantidad máxima de errores detectables de forma
 garantizada se obtiene mediante
-
 \begin{equation}
     e=d_{\min}-1=1.
 \end{equation}
 
 Por su parte, la cantidad máxima de errores corregibles
 de forma garantizada es
-
 \begin{equation}
     t=\left\lfloor
     \frac{d_{\min}-1}{2}
     \right\rfloor=0.
 \end{equation}
 
-Los parámetros obtenidos se resumen en la
-Tabla~\ref{tab:parametros_codigo_canal}.
+Los parámetros obtenidos se resumen en el
+Cuadro~\ref{tab:parametros_codigo_canal}.
+El resultado $t=0$ indica que el código no garantiza
+la corrección de un error de un bit.
+Sin embargo, la decodificación  puede corregir correctamente determinados patrones
+de error, dependiendo de su síndrome.
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{lc}
+    \begin{tabular}{lS}
         \toprule
         Parámetro & Valor \\
         \midrule
         Bits de información, $k$ & 11 \\
         Bits codificados, $n$ & 15 \\
         Bits de redundancia, $n-k$ & 4 \\
-        Tasa de código, $R_c$ & 0.7333 \\
+        Tasa de código, $R_c$ & 0.73 \\
         Distancia mínima, $d_{\min}$ & 2 \\
         Errores detectables, $e$ & 1 \\
         Errores corregibles, $t$ & 0 \\
@@ -434,35 +402,24 @@ Tabla~\ref{tab:parametros_codigo_canal}.
     \label{tab:parametros_codigo_canal}
 \end{table}
 
-El resultado $t=0$ indica que el código no garantiza
-la corrección de un error de un bit.
-
-Sin embargo, la decodificación  puede corregir correctamente determinados patrones
-de error, dependiendo de su síndrome.
-
-
 \subsubsection{Tabla de síndromes}
 
 El síndrome de una palabra recibida se calcula
 mediante la ecuación~\ref{eq:sindrome_canal}.
-
 Dado que la matriz de chequeo de paridad tiene
 $n-k=4$ filas, existen
-
 \begin{equation}
     N_S=2^{n-k}=2^4=16
 \end{equation}
-
 síndromes posibles.
 
 Para construir la tabla se generaron patrones de error
 de longitud 15, comenzando por los de menor peso
 de Hamming.
-
 Para cada patrón se calculó su síndrome y se seleccionó el primer patrón encontrado para
 cada síndrome.
 
-La Tabla~\ref{tab:sindromes_canal} presenta los
+El Cuadro~\ref{tab:sindromes_canal} presenta los
 16 síndromes posibles y sus correspondientes líderes
 de coset.
 
@@ -499,7 +456,6 @@ de coset.
 La tabla permite asociar cada síndrome con un
 patrón de error estimado. Cuando el síndrome
 es nulo, se selecciona el patrón de error nulo.
-
 Para síndromes no nulos se aplica el líder
 correspondiente, aunque la corrección puede
 no coincidir con el error real si distintos
@@ -511,29 +467,24 @@ patrones producen el mismo síndrome.
 Para verificar el funcionamiento del decodificador
 se realizó una prueba introduciendo artificialmente
 un error de un bit en una palabra codificada.
-
 Se consideró el mensaje de 11 bits
-
 \begin{equation}
     \mathbf{m}=\texttt{10110100101}.
 \end{equation}
 
 Aplicando la codificación mediante la matriz $G$
 se obtuvo la palabra de 15 bits
-
 \begin{equation}
     \mathbf{c}=\texttt{110010110100101}.
 \end{equation}
 
 Se introdujo un error en la primera posición,
 obteniéndose la palabra recibida
-
 \begin{equation}
     \mathbf{r}=\texttt{010010110100101}.
 \end{equation}
 
 El síndrome calculado fue
-
 \begin{equation}
     \mathbf{s}=H\mathbf{r}^T
     =
@@ -544,42 +495,41 @@ El síndrome calculado fue
 
 Consultando la tabla de síndromes se obtuvo
 el líder de coset
-
 \begin{equation}
     \hat{\mathbf{e}}=
     \texttt{100000000000000}.
 \end{equation}
 
 La palabra corregida se calculó como
-
 \begin{equation}
     \hat{\mathbf{c}}=
     \mathbf{r}+\hat{\mathbf{e}}\pmod 2,
 \end{equation}
-
 resultando
-
 \begin{equation}
     \boxed{
     \hat{\mathbf{c}}=
     \texttt{110010110100101}
     }.
 \end{equation}
-
 La palabra corregida coincide con la palabra
 originalmente transmitida.
-
 Al recuperar los últimos 11 bits se obtuvo
-
 \begin{equation}
     \hat{\mathbf{m}}=
     \texttt{10110100101},
 \end{equation}
-
 que coincide con el mensaje original.
 
-La Tabla~\ref{tab:ejemplo_correccion_canal}
+El Cuadro~\ref{tab:ejemplo_correccion_canal}
 resume los resultados de la prueba.
+El resultado verifica que el algoritmo implementado
+puede corregir determinados errores individuales
+mediante la tabla de síndromes.
+No obstante, dado que la distancia mínima del
+código es $d_{\min}=2$, esta corrección no
+se encuentra garantizada para cualquier error
+de un bit.
 
 \begin{table}[htbp]
     \centering
@@ -601,16 +551,6 @@ resume los resultados de la prueba.
     de un bit mediante decodificación por síndromes.}
     \label{tab:ejemplo_correccion_canal}
 \end{table}
-
-El resultado verifica que el algoritmo implementado
-puede corregir determinados errores individuales
-mediante la tabla de síndromes.
-
-No obstante, dado que la distancia mínima del
-código es $d_{\min}=2$, esta corrección no
-se encuentra garantizada para cualquier error
-de un bit.
-
 
 
 \subsection{Modulación y demodulación en banda banda pasante}
@@ -641,7 +581,7 @@ Para la caracterización teórica se consideran símbolos
 equiprobables y la normalización $E_b=1$. En consecuencia,
 $E_s=\log_2(M)$.
 
-La Tabla~\ref{tab:modulaciones} resume las características
+El Cuadro~\ref{tab:modulaciones} resume las características
 de las modulaciones implementadas. Las expresiones de
 probabilidad de error corresponden a un canal AWGN con
 detección coherente.
@@ -865,7 +805,7 @@ La energía media estimada por bit se obtuvo como
     \widehat{E}_b =
     \frac{\widehat{E}_s}{\log_2(M)}.
 \end{equation}
-La Tabla~\ref{tab:energias_16qam} compara los
+El Cuadro~\ref{tab:energias_16qam} compara los
 resultados teóricos y estimados para la modulación
 seleccionada.
 \begin{table}[htbp]
