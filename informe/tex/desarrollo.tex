@@ -588,16 +588,16 @@ detección coherente.
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{ccccc}
+    \begin{tabular}{cccccc}
         \toprule
-        Modulación & $M$ & $E_s$ & $E_b$ & Dimensión \\
+        Modulación & $M$ & $E_s$ & $P_s$ & $P_b$ & Dimensión \\
         \midrule
-        FSK & 2  & 1 & 1 & 2 \\
-        FSK & 4  & 2 & 1 & 4 \\
-        FSK & 8  & 3 & 1 & 8 \\
-        FSK & 16 & 4 & 1 & 16 \\
-        QAM & 4  & 2 & 1 & 2 \\
-        QAM & 16 & 4 & 1 & 2 \\
+        FSK & 2  & $  E_b$ & $   Q\left( \sqrt{ \frac{E_b}{N_0} } \right)$   & $P_s$ & 2 \\
+        FSK & 4  & $2 E_b$ & $ 3 Q\left( \sqrt{ \frac{2 E_b}{N_0} } \right)$ & $\frac{2}{3} P_s$ & 4 \\
+        FSK & 8  & $3 E_b$ & $ 7 Q\left( \sqrt{ \frac{3 E_b}{N_0} } \right)$ & $\frac{4}{7} P_s$ & 8 \\
+        FSK & 16 & $4 E_b$ & $15 Q\left( \sqrt{ \frac{4 E_b}{N_0} } \right)$ & $\frac{8}{15} P_s$ & 16 \\
+        QAM & 4  & $2 E_b$ & $ 2 Q\left( \sqrt{ \frac{2 E_b}{N_0} } \right)$ & $P_s / 2$ & 2 \\
+        QAM & 16 & $4 E_b$ & $   Q\left( \sqrt{ \frac{4 E_b}{5 N_0} } \right)$ & $P_s / 4$ & 2 \\
         \bottomrule
     \end{tabular}
     \caption{Caracterización teórica de las modulaciones implementadas.}
@@ -644,7 +644,7 @@ Para esta aplicación de M-FSK la probabilidad de error de símbolo puede defini
     P_s^{\mathrm{FSK}}
     \approx
     (M-1)
-    Q\left(\sqrt{\frac{E_s}{N_0}}\right).
+    Q\left(\sqrt{\frac{\log_2(M) E_b}{N_0}}\right).
 \end{equation}
 
 Dado que en M-FSK ortogonal todos los símbolos se
@@ -654,7 +654,6 @@ es
 \begin{equation}
     P_b^{\mathrm{FSK}} =
     \frac{M}{2(M-1)}P_s^{\mathrm{FSK}}.
-    \label{eq:ber_fsk}
 \end{equation}
 
 En la implementación de QAM se utiliza codificación
