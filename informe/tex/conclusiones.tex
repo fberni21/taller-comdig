@@ -42,5 +42,19 @@ como de las condiciones del canal. Asimismo, permiten
 comprender la importancia de las regiones de decisión
 para recuperar correctamente la información recibida.
 
+La incorporación de codificación de canal por medio de un código
+lineal de bloques permitió incorporar redundancia de manera controlada,
+con el objetivo de poder detectar y corregir los errores que puedan
+ocurrir en la transmisión de los datos. El empleo de la matriz $G$
+provista pr la cátedra, que genera un código $(15, 11)$, es capaz de
+corregir 11 errores de un bit (de los quince posibles), y otros 4
+patrones de error de dos bits, para un total de 15 patrones no nulos,
+debido a que hay $n-k=4$ bits de redundacia ($2^4 - 1 = 15$). Como el
+código tiene una distancia mínima $d_{\min} = 2$, es incapaz de
+corregir todos los patrones de error de un bit, que son los más
+frecuentes al usar código de Gray. Aún así, corrige una buena proporción
+de ellos, por lo que es esperable una reducción en la tasa de error de
+bits de información por el agregado de esta redundancia.
+
 
 % vim: ts=4 sts=4 sw=4 et lbr
